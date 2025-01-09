@@ -1,1 +1,61 @@
-{"data": {"affected_items": [{"rx": {"bytes": 0, "dropped": 0, "errors": 0, "packets": 0}, "scan": {"id": 0, "time": "2025-01-09T13:32:14+00:00"}, "tx": {"bytes": 0, "dropped": 0, "errors": 0, "packets": 0}, "type": " ", "name": "Loopback Pseudo-Interface 1", "mtu": 2147483647, "adapter": "Software Loopback Interface 1", "mac": "00:00:00:00:00:00", "state": "up", "agent_id": "003"}, {"rx": {"bytes": 5586359, "dropped": 0, "errors": 0, "packets": 14702}, "scan": {"id": 0, "time": "2025-01-09T13:32:14+00:00"}, "tx": {"bytes": 2458400, "dropped": 0, "errors": 0, "packets": 8956}, "type": "ethernet", "name": "Ethernet", "mtu": 1500, "adapter": "Intel(R) PRO/1000 MT Desktop Adapter", "mac": "08:00:27:4a:60:c0", "state": "up", "agent_id": "003"}], "total_affected_items": 2, "total_failed_items": 0, "failed_items": []}, "message": "All specified syscollector information was returned", "error": 0}
+{
+	"data": {
+		"affected_items": [
+			{
+				"rx": {
+					"bytes": 0,
+					"dropped": 0,
+					"errors": 0,
+					"packets": 0
+				},
+				"scan": {
+					"id": 0,
+					"time": "2025-01-09T13:32:14+00:00"
+				},
+				"tx": {
+					"bytes": 0,
+					"dropped": 0,
+					"errors": 0,
+					"packets": 0
+				},
+				"type": " ",
+				"name": "Loopback Pseudo-Interface 1",
+				"mtu": 2147483647,
+				"adapter": "Software Loopback Interface 1",
+				"mac": "00:00:00:00:00:00",
+				"state": "up",
+				"agent_id": "003"
+			},
+			{
+				"rx": {
+					"bytes": 5586359,
+					"dropped": 0,
+					"errors": 0,
+					"packets": 14702
+				},
+				"scan": {
+					"id": 0,
+					"time": "2025-01-09T13:32:14+00:00"
+				},
+				"tx": {
+					"bytes": 2458400,
+					"dropped": 0,
+					"errors": 0,
+					"packets": 8956
+				},
+				"type": "ethernet",
+				"name": "Ethernet",
+				"mtu": 1500,
+				"adapter": "Intel(R) PRO/1000 MT Desktop Adapter",
+				"mac": "08:00:27:4a:60:c0",
+				"state": "up",
+				"agent_id": "003"
+			}
+		],
+		"total_affected_items": 2,
+		"total_failed_items": 0,
+		"failed_items": []
+	},
+	"message": "All specified syscollector information was returned",
+	"error": 0
+}
