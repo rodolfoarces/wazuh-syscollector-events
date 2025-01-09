@@ -70,6 +70,45 @@ def getAgentHardware(agent_id):
         exit(4)
     print(r)
 
+def getAgentProcesses(agent_id):
+    # API processing
+    msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+    msg_url = manager_url + "/syscollector/" + agent_id + "/processes?wait_for_complete=true" 
+    agent_process_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_process_request.content.decode('utf-8'))
+    # Check
+    # Check
+    if agent_process_request.status_code != 200:
+        logger.error("There were errors getting the agent processes")
+        exit(5)
+    print(r)
+
+def getAgentOS(agent_id):
+    # API processing
+    msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+    msg_url = manager_url + "/syscollector/" + agent_id + "/os?wait_for_complete=true" 
+    agent_os_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_os_request.content.decode('utf-8'))
+    # Check
+    # Check
+    if agent_os_request.status_code != 200:
+        logger.error("There were errors getting the agent os information")
+        exit(6)
+    print(r)
+
+def getAgentNetifaces(agent_id):
+    # API processing
+    msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+    msg_url = manager_url + "/syscollector/" + agent_id + "/netiface?wait_for_complete=true" 
+    agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_iface_request.content.decode('utf-8'))
+    # Check
+    # Check
+    if agent_iface_request.status_code != 200:
+        logger.error("There were errors getting the agent os information")
+        exit(6)
+    print(r)
+
 token = apiAuthenticate(manager_url, username, password)
 if token == None:
     exit(1)
@@ -77,4 +116,7 @@ else:
      getAgentList()
      for agent in agent_list:
          getAgentHardware(agent)
+         getAgentProcesses(agent)
+         getAgentOS(agent)
+         getAgentNetifaces(agent)
 
