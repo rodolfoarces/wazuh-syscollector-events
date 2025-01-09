@@ -38,7 +38,6 @@ def apiAuthenticate(manager_url,username, password):
             logger.error("Authentication error")
             return None
 
-
 def getAgentList():
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
@@ -64,7 +63,6 @@ def getAgentHardware(agent_id):
     agent_hardware_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_hardware_request.content.decode('utf-8'))
     # Check
-    # Check
     if agent_hardware_request.status_code != 200:
         logger.error("There were errors getting the agent hardware")
         exit(4)
@@ -76,7 +74,6 @@ def getAgentProcesses(agent_id):
     msg_url = manager_url + "/syscollector/" + agent_id + "/processes?wait_for_complete=true" 
     agent_process_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_process_request.content.decode('utf-8'))
-    # Check
     # Check
     if agent_process_request.status_code != 200:
         logger.error("There were errors getting the agent processes")
@@ -90,7 +87,6 @@ def getAgentOS(agent_id):
     agent_os_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_os_request.content.decode('utf-8'))
     # Check
-    # Check
     if agent_os_request.status_code != 200:
         logger.error("There were errors getting the agent os information")
         exit(6)
@@ -103,9 +99,8 @@ def getAgentNetifaces(agent_id):
     agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_iface_request.content.decode('utf-8'))
     # Check
-    # Check
     if agent_iface_request.status_code != 200:
-        logger.error("There were errors getting the agent os information")
+        logger.error("There were errors getting the agent network interfaces information")
         exit(6)
     print(r)
 
