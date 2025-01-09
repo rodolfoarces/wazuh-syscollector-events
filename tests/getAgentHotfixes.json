@@ -1,1 +1,65 @@
-{"data": {"affected_items": [{"scan_id": 0, "hotfix": "KB2468871", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB2478063", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB2533523", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB2544514", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB2600211", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB2600217", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB5008882", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB5010523", "scan_time": "2024-11-12T18:18:51+00:00", "agent_id": "003"}, {"scan_id": 0, "hotfix": "KB5011497", "scan_time": "2024-11-12T18:18:52+00:00", "agent_id": "003"}], "total_affected_items": 9, "total_failed_items": 0, "failed_items": []}, "message": "All specified syscollector information was returned", "error": 0}
+{
+	"data": {
+		"affected_items": [
+			{
+				"scan_id": 0,
+				"hotfix": "KB2468871",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB2478063",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB2533523",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB2544514",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB2600211",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB2600217",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB5008882",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB5010523",
+				"scan_time": "2024-11-12T18:18:51+00:00",
+				"agent_id": "003"
+			},
+			{
+				"scan_id": 0,
+				"hotfix": "KB5011497",
+				"scan_time": "2024-11-12T18:18:52+00:00",
+				"agent_id": "003"
+			}
+		],
+		"total_affected_items": 9,
+		"total_failed_items": 0,
+		"failed_items": []
+	},
+	"message": "All specified syscollector information was returned",
+	"error": 0
+}
