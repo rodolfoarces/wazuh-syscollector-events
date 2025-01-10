@@ -7,27 +7,39 @@ import json
 import logging
 import time
 import configparser
-
+import os.path
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-# Variables
-token = None
-
-# Configurations
-config = configparser.ConfigParser()
-config.read("syscollector-report.conf")
-
-username = "wazuh"
-password = "UL*py?ZC1+A0KdCDLGphFPeNBbALiOcB"
-manager_url = "https://wazuh00.wazuh.local:55000"
-
-agent_list = []
-
-## Log to file or stdout
+## Logging options
 # https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook
 # create file handler which logs even debug messages
 logger = logging.getLogger("syscollect")
 logger.setLevel(logging.DEBUG)
+
+# Variables
+token = None
+username = "wazuh"
+password = "wazuh"
+manager_host = "localhost"
+manager_api_port = "55000"
+manager_url = "https://" + manager_host + ":" + manager_api_port
+
+# Configurations
+config_filename = "syscollector-report.conf"
+
+if os.path.isfile(config_filename):
+	print("Opening configuration file")
+	config = configparser.ConfigParser()
+	config.read(config_filename)
+	username = config.get('global', 'username')
+	password = config.get('global', 'password')
+	print(username)
+	print(password)
+else:
+	logger.debug("Error opening configuration file, taking default values")
+
+agent_list = []
+
 
 def apiAuthenticate(manager_url,username, password):
     auth_endpoint = manager_url + "/security/user/authenticate"
