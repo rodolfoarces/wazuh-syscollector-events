@@ -6,11 +6,17 @@ import requests
 import json
 import logging
 import time
+import configparser
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 # Variables
 token = None
+
+# Configurations
+config = configparser.ConfigParser()
+config.read("syscollector-report.conf")
+
 username = "wazuh"
 password = "UL*py?ZC1+A0KdCDLGphFPeNBbALiOcB"
 manager_url = "https://wazuh00.wazuh.local:55000"
