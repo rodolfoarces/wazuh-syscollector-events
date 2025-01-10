@@ -15,6 +15,11 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 # create file handler which logs even debug messages
 logger = logging.getLogger("syscollect")
 logger.setLevel(logging.DEBUG)
+fh = logging.StreamHandler()
+fh.setLevel(logging.DEBUG)
+fh_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(fh_formatter)
+logger.addHandler(fh)
 
 # Variables
 token = None
@@ -29,7 +34,7 @@ config_filename = "syscollector-report.conf"
 
 # Load data from configuration file
 if os.path.isfile(config_filename):
-	print("Opening configuration file")
+	logger.debug("Opening configuration file")
 	config = configparser.ConfigParser()
 	config.read(config_filename)
 	username = config.get('global', 'username')
@@ -85,7 +90,7 @@ def getAgentHardware(agent_id):
     if agent_hardware_request.status_code != 200:
         logger.error("There were errors getting the agent hardware")
         exit(4)
-    print(r)
+    logger.debug(r)
 
 def getAgentProcesses(agent_id):
     # API processing
@@ -97,7 +102,7 @@ def getAgentProcesses(agent_id):
     if agent_process_request.status_code != 200:
         logger.error("There were errors getting the agent processes")
         exit(5)
-    print(r)
+    logger.debug(r)
 
 def getAgentOS(agent_id):
     # API processing
@@ -109,7 +114,7 @@ def getAgentOS(agent_id):
     if agent_os_request.status_code != 200:
         logger.error("There were errors getting the agent os information")
         exit(6)
-    print(r)
+    logger.debug(r)
 
 def isWindowsOS(agent_id):
     # API processing
@@ -134,7 +139,7 @@ def getAgentNetifaces(agent_id):
     if agent_iface_request.status_code != 200:
         logger.error("There were errors getting the agent network interfaces information")
         exit(6)
-    print(r)
+    logger.debug(r)
 
 def getAgentNetaddr(agent_id):
     # API processing
@@ -146,7 +151,7 @@ def getAgentNetaddr(agent_id):
     if agent_netaddr_request.status_code != 200:
         logger.error("There were errors getting the agent network address information")
         exit(6)
-    print(r)
+    logger.debug(r)
 
 def getAgentHotfixes(agent_id):
     # API processing
@@ -158,7 +163,7 @@ def getAgentHotfixes(agent_id):
     if agent_hotfix_request.status_code != 200:
         logger.error("There were errors getting the agent hotfixes information")
         exit(6)
-    print(r)
+    logger.debug(r)
 
 def getAgentProto(agent_id):
     # API processing
@@ -170,7 +175,7 @@ def getAgentProto(agent_id):
     if agent_netproto_request.status_code != 200:
         logger.error("There were errors getting the agent network protocol information")
         exit(6)
-    print(r)
+    logger.debug(r)
 
 def getAgentPackages(agent_id):
     # API processing
@@ -182,7 +187,7 @@ def getAgentPackages(agent_id):
     if agent_package_request.status_code != 200:
         logger.error("There were errors getting the agent packages information")
         exit(6)
-    print(r)
+    logger.debug(r)
 
 def getAgentPorts(agent_id):
     # API processing
@@ -210,9 +215,9 @@ if __name__ == "__main__":
             getAgentNetaddr(agent)
             if isWindowsOS(agent):
                 getAgentHotfixes(agent)
-                print("The OS is Windows")              
+                logger.debug("The OS is Windows")              
             else:
-                print("The OS is not Windows")
+                logger.debug("The OS is not Windows")
             getAgentHotfixes(agent)
             getAgentProto(agent)
             getAgentPackages(agent)
