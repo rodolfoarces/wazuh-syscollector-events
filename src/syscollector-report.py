@@ -27,19 +27,20 @@ manager_url = "https://" + manager_host + ":" + manager_api_port
 # Configurations
 config_filename = "syscollector-report.conf"
 
+# Load data from configuration file
 if os.path.isfile(config_filename):
 	print("Opening configuration file")
 	config = configparser.ConfigParser()
 	config.read(config_filename)
 	username = config.get('global', 'username')
 	password = config.get('global', 'password')
-	print(username)
-	print(password)
+	manager_host =  config.get('global', 'manager_host')
+	manager_api_port =  config.get('global', 'manager_api_port')
+	manager_url = "https://" + manager_host + ":" + manager_api_port
 else:
 	logger.debug("Error opening configuration file, taking default values")
 
 agent_list = []
-
 
 def apiAuthenticate(manager_url,username, password):
     auth_endpoint = manager_url + "/security/user/authenticate"
@@ -139,10 +140,10 @@ def getAgentNetaddr(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/netaddr?wait_for_complete=true" 
-    agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
-    r = json.loads(agent_iface_request.content.decode('utf-8'))
+    agent_netaddr_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_netaddr_request.content.decode('utf-8'))
     # Check
-    if agent_iface_request.status_code != 200:
+    if agent_netaddr_request.status_code != 200:
         logger.error("There were errors getting the agent network address information")
         exit(6)
     print(r)
@@ -152,10 +153,10 @@ def getAgentHotfixes(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/hotfixes?wait_for_complete=true" 
-    agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
-    r = json.loads(agent_iface_request.content.decode('utf-8'))
+    agent_hotfix_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_hotfix_request.content.decode('utf-8'))
     # Check
-    if agent_iface_request.status_code != 200:
+    if agent_hotfix_request.status_code != 200:
         logger.error("There were errors getting the agent hotfixes information")
         exit(6)
     print(r)
@@ -164,10 +165,10 @@ def getAgentProto(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/netproto?wait_for_complete=true" 
-    agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
-    r = json.loads(agent_iface_request.content.decode('utf-8'))
+    agent_netproto_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_netproto_request.content.decode('utf-8'))
     # Check
-    if agent_iface_request.status_code != 200:
+    if agent_netproto_request.status_code != 200:
         logger.error("There were errors getting the agent network protocol information")
         exit(6)
     print(r)
@@ -176,10 +177,10 @@ def getAgentPackages(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/packages?wait_for_complete=true" 
-    agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
-    r = json.loads(agent_iface_request.content.decode('utf-8'))
+    agent_package_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_package_request.content.decode('utf-8'))
     # Check
-    if agent_iface_request.status_code != 200:
+    if agent_package_request.status_code != 200:
         logger.error("There were errors getting the agent packages information")
         exit(6)
     print(r)
@@ -188,17 +189,18 @@ def getAgentPorts(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/ports?wait_for_complete=true" 
-    agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
-    r = json.loads(agent_iface_request.content.decode('utf-8'))
+    agent_ports_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_ports_request.content.decode('utf-8'))
     # Check
-    if agent_iface_request.status_code != 200:
+    if agent_ports_request.status_code != 200:
         logger.error("There were errors getting the agent network ports information")
         exit(6)
     print(r)
 
 token = apiAuthenticate(manager_url, username, password)
 if token == None:
-    exit(1)
+	logger.debug("Error, exiting")
+	exit(1)
 else:
      getAgentList()
      for agent in agent_list:
