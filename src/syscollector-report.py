@@ -110,6 +110,19 @@ def getAgentOS(agent_id):
         exit(6)
     print(r)
 
+def isWindowsOS(agent_id):
+    # API processing
+    msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+    msg_url = manager_url + "/syscollector/" + agent_id + "/os?wait_for_complete=true" 
+    agent_os_request = requests.get(msg_url, headers=msg_headers, verify=False)
+    r = json.loads(agent_os_request.content.decode('utf-8'))
+    # Check
+    if agent_os_request.status_code != 200:
+        logger.error("There were errors getting the agent os information")
+        exit(6)
+    os_name = r['data']['affected_items'][0]['os']['name']
+    return 'Windows' in os_name
+
 def getAgentNetifaces(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
@@ -134,7 +147,7 @@ def getAgentNetaddr(agent_id):
         exit(6)
     print(r)
 
-#TODO: only for windows
+#only for windows
 def getAgentHotfixes(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
@@ -192,10 +205,13 @@ else:
          getAgentHardware(agent)
          getAgentProcesses(agent)
          getAgentOS(agent)
+         if isWindowsOS(agent):
+              getAgentHotfixes(agent)
+              print("The OS is Windows")              
+         else:
+              print("The OS is not Windows")
          getAgentNetifaces(agent)
          getAgentNetaddr(agent)
-#TODO:Only for windows
-         getAgentHotfixes(agent)
          getAgentProto(agent)
          getAgentPackages(agent)
          getAgentPorts(agent)
