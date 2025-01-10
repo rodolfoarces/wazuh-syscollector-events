@@ -148,7 +148,6 @@ def getAgentNetaddr(agent_id):
         exit(6)
     print(r)
 
-#only for windows
 def getAgentHotfixes(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
@@ -195,25 +194,26 @@ def getAgentPorts(agent_id):
     if agent_ports_request.status_code != 200:
         logger.error("There were errors getting the agent network ports information")
         exit(6)
-    print(r)
 
-token = apiAuthenticate(manager_url, username, password)
-if token == None:
-	logger.debug("Error, exiting")
-	exit(1)
-else:
-     getAgentList()
-     for agent in agent_list:
-         getAgentHardware(agent)
-         getAgentProcesses(agent)
-         getAgentOS(agent)
-         if isWindowsOS(agent):
-              getAgentHotfixes(agent)
-              print("The OS is Windows")              
-         else:
-              print("The OS is not Windows")
-         getAgentNetifaces(agent)
-         getAgentNetaddr(agent)
-         getAgentProto(agent)
-         getAgentPackages(agent)
-         getAgentPorts(agent)
+if __name__ == "__main__":
+    token = apiAuthenticate(manager_url, username, password)
+    if token == None:
+        logger.debug("Error, exiting")
+        exit(1)
+    else:
+        getAgentList()
+        for agent in agent_list:
+            getAgentHardware(agent)
+            getAgentProcesses(agent)
+            getAgentOS(agent)
+            getAgentNetifaces(agent)
+            getAgentNetaddr(agent)
+            if isWindowsOS(agent):
+                getAgentHotfixes(agent)
+                print("The OS is Windows")              
+            else:
+                print("The OS is not Windows")
+            getAgentHotfixes(agent)
+            getAgentProto(agent)
+            getAgentPackages(agent)
+            getAgentPorts(agent)
