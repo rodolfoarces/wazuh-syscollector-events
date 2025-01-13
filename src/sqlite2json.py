@@ -5,25 +5,10 @@ import os
 import sqlite3
 import glob
 import os
+import json
 
 def check_db_access(db_path):
     return os.path.isfile(db_path) and os.access(db_path, os.R_OK)
-
-def show_osinfo(db_path):
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM sys_osinfo")
-        osinfo = cursor.fetchall()
-        if osinfo:
-            print("Data in the osinfo database:")
-            for row in osinfo:
-                print(row)
-        else:
-            print("No osinfo data found in the database.")
-        conn.close()
-    except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
 
 def show_hotfixes(db_path):
     try:
@@ -144,11 +129,33 @@ def show_programs(db_path):
         cursor.execute("SELECT * FROM sys_programs")
         programs = cursor.fetchall()
         if programs:
-            print("Data in the programs database:")
-            for row in programs:
-                print(row)
+            columns = [column[0] for column in cursor.description]  # Get column names
+            data = [dict(zip(columns, row)) for row in programs]
+            # Convert the data to JSON
+            json_data = json.dumps(data, indent=4)
+            # Print or save the JSON data
+            print(json_data)
         else:
             print("No programs data found in the database.")
+        conn.close()
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+
+def show_osinfo(db_path):
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM sys_osinfo")
+        osinfo = cursor.fetchall()
+        if osinfo:
+            columns = [column[0] for column in cursor.description]  # Get column names
+            data = [dict(zip(columns, row)) for row in osinfo]
+            # Convert the data to JSON
+            json_data = json.dumps(data, indent=4)
+            # Print or save the JSON data
+            print(json_data)
+        else:
+            print("No osinfo data found in the database.")
         conn.close()
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
@@ -167,13 +174,6 @@ def main():
             print(f"Start procesing: {db_path}")
             print("Database file is accessible.")
             show_osinfo(db_path)
-            show_hotfixes(db_path)
-            show_hwinfo(db_path)
-            show_netaddr(db_path)
-            show_netiface(db_path)
-            show_netproto(db_path)
-            show_ports(db_path)
-            show_processes(db_path)
             show_programs(db_path)
             print(f"End procesing: {db_path}")
         else:
