@@ -3,6 +3,11 @@
 
 import os
 import sqlite3
+import glob
+import os
+
+# Ruta del directorio
+dir_path = os.path.expanduser("/var/ossec/queue/db/")
 
 def check_db_access(db_path):
     return os.path.isfile(db_path) and os.access(db_path, os.R_OK)
@@ -155,19 +160,24 @@ def main():
     #db_path = os.path.expanduser("~/410.db")
     #db_path = os.path.expanduser("/var/ossec/queue/syscollector/db/local.db")
     db_path = os.path.expanduser("/var/ossec/queue/db/002.db")
-    if check_db_access(db_path):
-        print("Database file is accessible.")
-        show_osinfo(db_path)
-        show_hotfixes(db_path)
-        show_hwinfo(db_path)
-        show_netaddr(db_path)
-        show_netiface(db_path)
-        show_netproto(db_path)
-        show_ports(db_path)
-        show_processes(db_path)
-        show_programs(db_path)
-    else:
-        print("Database file is not accessible.")
+    files = glob.glob(os.path.join(dir_path, '[0-9][0-9][0-9].db'))
+# Procesa cada archivo encontrado
+    for db_path in files:
+        if check_db_access(db_path):
+            print(f"Start procesing: {db_path}")
+            print("Database file is accessible.")
+            show_osinfo(db_path)
+            show_hotfixes(db_path)
+            show_hwinfo(db_path)
+            show_netaddr(db_path)
+            show_netiface(db_path)
+            show_netproto(db_path)
+            show_ports(db_path)
+            show_processes(db_path)
+            show_programs(db_path)
+            print(f"End procesing: {db_path}")
+        else:
+            print("Database file is not accessible.")
 
 if __name__ == "__main__":
     main()
