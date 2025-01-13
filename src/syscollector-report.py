@@ -8,6 +8,7 @@ import logging
 import time
 import configparser
 import os.path
+from requests.auth import HTTPBasicAuth
 
 # Additional configurations
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
@@ -16,9 +17,9 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 # https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook
 # create file handler which logs even debug messages
 logger = logging.getLogger("syscollector-report")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 fh = logging.StreamHandler()
-fh.setLevel(logging.INFO)
+fh.setLevel(logging.DEBUG)
 fh_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(fh_formatter)
 logger.addHandler(fh)
@@ -183,6 +184,28 @@ def getAgentPorts(agent_id):
         logger.debug(r)
         return r['data']['affected_items']
 
+# Post Actions
+def setHardware(hardware_data):
+    # API processing
+    msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+    hardware_content = { "cpu": { "cores": hardware_data["cpu"]["cores"], 
+                        "mhz": hardware_data["cpu"]["mhz"], 
+                        "name": hardware_data["cpu"]["name"]},
+                        "ram": { "free": hardware_data["ram"]["free"], 
+                        "total": hardware_data["ram"]["total"], 
+                        "usage": hardware_data["ram"]["usage"]} 
+                        }
+    msg_data = { "events": [ str(hardware_content) ] }
+    msg_url = manager_url + "/events?wait_for_complete=true" 
+    forward_request = requests.post(msg_url, json=msg_data, headers=msg_headers, verify=False)
+    r = json.loads(forward_request.content.decode('utf-8'))
+    # Check 
+    if forward_request.status_code != 200:
+            logger.error("There were errors sending the logs")
+            logger.debug(r)
+    else:
+        logger.debug(r)
+
 if __name__ == "__main__":
     # Initial values
     token = None
@@ -199,10 +222,11 @@ if __name__ == "__main__":
         logger.debug("Opening configuration file")
         config = configparser.ConfigParser()
         config.read(config_filename)
-        username = config.get('global', 'username')
-        password = config.get('global', 'password')
-        manager_host =  config.get('global', 'manager_host')
-        manager_api_port =  config.get('global', 'manager_api_port')
+        # Wazuh manager connection
+        manager_username = config.get('manager', 'manager_username')
+        manager_password = config.get('manager', 'manager_password')
+        manager_host =  config.get('manager', 'manager_host')
+        manager_api_port =  config.get('manager', 'manager_api_port')
         manager_url = "https://" + manager_host + ":" + manager_api_port
     else:
         logger.debug("Error opening configuration file, taking default values")
@@ -211,22 +235,23 @@ if __name__ == "__main__":
     agent_list = []
 
     # Connect to API
-    token = apiAuthenticate(manager_url, username, password)
+    token = apiAuthenticate(manager_url, manager_username, manager_password)
     if token == None:
-        logger.debug("Error, exiting")
+        logger.debug("Error coonecting, exiting")
         exit(1)
     else:
         getAgentList()
         for agent in agent_list:
             agent["hardware"] = getAgentHardware(agent["id"])
-            agent["processes"] = getAgentProcesses(agent["id"])
-            agent["os"] = getAgentOS(agent["id"])
-            agent["netiface"] = getAgentNetifaces(agent["id"])
-            agent["netaddr"] = getAgentNetaddr(agent["id"])
+            setHardware(agent["hardware"][0])
+            #agent["processes"] = getAgentProcesses(agent["id"])
+            #agent["os"] = getAgentOS(agent["id"])
+            #agent["netiface"] = getAgentNetifaces(agent["id"])
+            #agent["netaddr"] = getAgentNetaddr(agent["id"])
             # TO-DO, validate with os content present
             #if agent["os"]["os"]["name"] == "Windows":
             #    agent["hotfix"] = getAgentHotfixes(agent["id"])
-            agent["proto"] = getAgentProto(agent["id"])
-            agent["packages"] = getAgentPackages(agent["id"])
-            agent["ports"] = getAgentPorts(agent["id"])
-            print(agent)
+            #agent["proto"] = getAgentProto(agent["id"])
+            #agent["packages"] = getAgentPackages(agent["id"])
+            #agent["ports"] = getAgentPorts(agent["id"])
+        #print(agent_list)
