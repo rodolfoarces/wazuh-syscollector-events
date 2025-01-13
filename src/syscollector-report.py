@@ -8,15 +8,17 @@ import logging
 import time
 import configparser
 import os.path
+
+# Additional configurations
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 ## Logging options
 # https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook
 # create file handler which logs even debug messages
 logger = logging.getLogger("syscollector-report")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 fh = logging.StreamHandler()
-fh.setLevel(logging.DEBUG)
+fh.setLevel(logging.INFO)
 fh_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(fh_formatter)
 logger.addHandler(fh)
@@ -51,8 +53,8 @@ def getAgentList():
         logger.debug("No agents")
         exit(3)
     else:
-        for agents in r['data']['affected_items']: 
-            agent_list.append(agents['id'])
+        for agent in r['data']['affected_items']: 
+            agent_list.append(agent)
 
 def getAgentHardware(agent_id):
     # API processing
@@ -64,7 +66,10 @@ def getAgentHardware(agent_id):
     if agent_hardware_request.status_code != 200:
         logger.error("There were errors getting the agent hardware")
         exit(4)
-    logger.debug(r)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items'][0]
+        
 
 def getAgentProcesses(agent_id):
     # API processing
@@ -76,7 +81,9 @@ def getAgentProcesses(agent_id):
     if agent_process_request.status_code != 200:
         logger.error("There were errors getting the agent processes")
         exit(5)
-    logger.debug(r)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items']
 
 def getAgentOS(agent_id):
     # API processing
@@ -88,20 +95,9 @@ def getAgentOS(agent_id):
     if agent_os_request.status_code != 200:
         logger.error("There were errors getting the agent os information")
         exit(6)
-    logger.debug(r)
-
-def isWindowsOS(agent_id):
-    # API processing
-    msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscollector/" + agent_id + "/os?wait_for_complete=true" 
-    agent_os_request = requests.get(msg_url, headers=msg_headers, verify=False)
-    r = json.loads(agent_os_request.content.decode('utf-8'))
-    # Check
-    if agent_os_request.status_code != 200:
-        logger.error("There were errors getting the agent os information")
-        exit(6)
-    os_name = r['data']['affected_items'][0]['os']['name']
-    return 'Windows' in os_name
+    else:
+        logger.debug(r)
+        return r['data']['affected_items'][0]
 
 def getAgentNetifaces(agent_id):
     # API processing
@@ -113,7 +109,9 @@ def getAgentNetifaces(agent_id):
     if agent_iface_request.status_code != 200:
         logger.error("There were errors getting the agent network interfaces information")
         exit(6)
-    logger.debug(r)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items']
 
 def getAgentNetaddr(agent_id):
     # API processing
@@ -125,7 +123,9 @@ def getAgentNetaddr(agent_id):
     if agent_netaddr_request.status_code != 200:
         logger.error("There were errors getting the agent network address information")
         exit(6)
-    logger.debug(r)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items']
 
 def getAgentHotfixes(agent_id):
     # API processing
@@ -137,7 +137,9 @@ def getAgentHotfixes(agent_id):
     if agent_hotfix_request.status_code != 200:
         logger.error("There were errors getting the agent hotfixes information")
         exit(6)
-    logger.debug(r)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items']
 
 def getAgentProto(agent_id):
     # API processing
@@ -149,7 +151,9 @@ def getAgentProto(agent_id):
     if agent_netproto_request.status_code != 200:
         logger.error("There were errors getting the agent network protocol information")
         exit(6)
-    logger.debug(r)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items']
 
 def getAgentPackages(agent_id):
     # API processing
@@ -161,7 +165,9 @@ def getAgentPackages(agent_id):
     if agent_package_request.status_code != 200:
         logger.error("There were errors getting the agent packages information")
         exit(6)
-    logger.debug(r)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items']
 
 def getAgentPorts(agent_id):
     # API processing
@@ -173,6 +179,9 @@ def getAgentPorts(agent_id):
     if agent_ports_request.status_code != 200:
         logger.error("There were errors getting the agent network ports information")
         exit(6)
+    else:
+        logger.debug(r)
+        return r['data']['affected_items']
 
 if __name__ == "__main__":
     # Initial values
@@ -209,17 +218,15 @@ if __name__ == "__main__":
     else:
         getAgentList()
         for agent in agent_list:
-            getAgentHardware(agent)
-            getAgentProcesses(agent)
-            getAgentOS(agent)
-            getAgentNetifaces(agent)
-            getAgentNetaddr(agent)
-            if isWindowsOS(agent):
-                getAgentHotfixes(agent)
-                logger.debug("The OS is Windows")              
-            else:
-                logger.debug("The OS is not Windows")
-            getAgentHotfixes(agent)
-            getAgentProto(agent)
-            getAgentPackages(agent)
-            getAgentPorts(agent)
+            agent["hardware"] = getAgentHardware(agent["id"])
+            agent["processes"] = getAgentProcesses(agent["id"])
+            agent["os"] = getAgentOS(agent["id"])
+            agent["netiface"] = getAgentNetifaces(agent["id"])
+            agent["netaddr"] = getAgentNetaddr(agent["id"])
+            # TO-DO, validate with os content present
+            #if agent["os"]["os"]["name"] == "Windows":
+            #    agent["hotfix"] = getAgentHotfixes(agent["id"])
+            agent["proto"] = getAgentProto(agent["id"])
+            agent["packages"] = getAgentPackages(agent["id"])
+            agent["ports"] = getAgentPorts(agent["id"])
+            print(agent)
