@@ -193,7 +193,8 @@ def setHardware(hardware_data):
                         "name": hardware_data["cpu"]["name"]},
                         "ram": { "free": hardware_data["ram"]["free"], 
                         "total": hardware_data["ram"]["total"], 
-                        "usage": hardware_data["ram"]["usage"]} 
+                        "usage": hardware_data["ram"]["usage"]},
+                        "agent_id": hardware_data["agent_id"]
                         }
     msg_data = { "events": [ str(hardware_content) ] }
     msg_url = manager_url + "/events?wait_for_complete=true" 
@@ -201,8 +202,8 @@ def setHardware(hardware_data):
     r = json.loads(forward_request.content.decode('utf-8'))
     # Check 
     if forward_request.status_code != 200:
-            logger.error("There were errors sending the logs")
-            logger.debug(r)
+        logger.error("There were errors sending the logs")
+        logger.debug(r)
     else:
         logger.debug(r)
 
