@@ -68,7 +68,7 @@ def getAgentHardware(agent_id):
         exit(4)
     else:
         logger.debug(r)
-        return r['data']['affected_items'][0]
+        return r['data']['affected_items']
         
 
 def getAgentProcesses(agent_id):
@@ -97,7 +97,7 @@ def getAgentOS(agent_id):
         exit(6)
     else:
         logger.debug(r)
-        return r['data']['affected_items'][0]
+        return r['data']['affected_items']
 
 def getAgentNetifaces(agent_id):
     # API processing
