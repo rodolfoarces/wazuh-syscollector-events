@@ -13,39 +13,13 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 ## Logging options
 # https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook
 # create file handler which logs even debug messages
-logger = logging.getLogger("syscollect")
+logger = logging.getLogger("syscollector-report")
 logger.setLevel(logging.DEBUG)
 fh = logging.StreamHandler()
 fh.setLevel(logging.DEBUG)
 fh_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(fh_formatter)
 logger.addHandler(fh)
-
-# Variables
-token = None
-username = "wazuh"
-password = "wazuh"
-manager_host = "localhost"
-manager_api_port = "55000"
-manager_url = "https://" + manager_host + ":" + manager_api_port
-
-# Configurations
-config_filename = "syscollector-report.conf"
-
-# Load data from configuration file
-if os.path.isfile(config_filename):
-	logger.debug("Opening configuration file")
-	config = configparser.ConfigParser()
-	config.read(config_filename)
-	username = config.get('global', 'username')
-	password = config.get('global', 'password')
-	manager_host =  config.get('global', 'manager_host')
-	manager_api_port =  config.get('global', 'manager_api_port')
-	manager_url = "https://" + manager_host + ":" + manager_api_port
-else:
-	logger.debug("Error opening configuration file, taking default values")
-
-agent_list = []
 
 def apiAuthenticate(manager_url,username, password):
     auth_endpoint = manager_url + "/security/user/authenticate"
@@ -201,6 +175,33 @@ def getAgentPorts(agent_id):
         exit(6)
 
 if __name__ == "__main__":
+    # Initial values
+    token = None
+    username = "wazuh"
+    password = "wazuh"
+    manager_host = "localhost"
+    manager_api_port = "55000"
+    manager_url = "https://" + manager_host + ":" + manager_api_port
+
+    # Configurations
+    config_filename = "syscollector-report.conf"
+    # Load data from configuration file
+    if os.path.isfile(config_filename):
+        logger.debug("Opening configuration file")
+        config = configparser.ConfigParser()
+        config.read(config_filename)
+        username = config.get('global', 'username')
+        password = config.get('global', 'password')
+        manager_host =  config.get('global', 'manager_host')
+        manager_api_port =  config.get('global', 'manager_api_port')
+        manager_url = "https://" + manager_host + ":" + manager_api_port
+    else:
+        logger.debug("Error opening configuration file, taking default values")
+    
+    #Initial data structure
+    agent_list = []
+
+    # Connect to API
     token = apiAuthenticate(manager_url, username, password)
     if token == None:
         logger.debug("Error, exiting")
