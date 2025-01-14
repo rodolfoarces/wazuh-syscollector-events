@@ -213,23 +213,7 @@ def setHardware(hardware_data):
 def setProcess(process_data_list):
     for process_data in process_data_list:
         msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-        process_content = { "size": process_data["size"],
-                           "utime": process_data["utime"],
-                           "ppid": process_data["ppid"],
-                           "name": process_data["name"],
-                           "vm_size": process_data["vm_size"],
-                           "session": process_data["session"],
-                           "start_time": process_data["start_time"],
-                           "priority": process_data["priority"],
-                           "cmd": process_data["cmd"],
-                           "stime": process_data["stime"],
-                           "pid": process_data["pid"],
-                           "nlwp": process_data["nlwp"],
-                           "agent_id": process_data["agent_id"],
-                            "scan": { "id": process_data["scan"]["id"], 
-                            "time": process_data["scan"]["time"]}
-                            }
-        msg_data = { "events": [ str(process_content) ] }
+        msg_data = { "events": [ str(process_data) ] }
         msg_url = manager_url + "/events?wait_for_complete=true" 
         forward_request = requests.post(msg_url, json=msg_data, headers=msg_headers, verify=False)
         r = json.loads(forward_request.content.decode('utf-8'))
