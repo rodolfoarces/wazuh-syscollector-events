@@ -349,7 +349,7 @@ if __name__ == "__main__":
             agent["netaddr"] = getAgentNetaddr(agent["id"])
             setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
             # TO-DO, validate with os content present
-            if 'windows' in agent["os"][0]["os"]["platform"] or 'Microsoft' in agent["os"][0]["os"]["name"]  : 
+            if 'Microsoft' in agent["os"][0]["os"]["name"]: 
                 agent["hotfix"] = getAgentHotfixes(agent["id"])
                 setHotfix(agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
             else:
