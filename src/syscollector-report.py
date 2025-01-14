@@ -197,6 +197,20 @@ def setHardware(hardware_data, location , SOCKET_ADDR):
         logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
         exit(4)
 
+def setProcess(process_data, location , SOCKET_ADDR):
+    count = 0
+    for process in process_data:
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(process))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
+
 def setOS(os_data, location, SOCKET_ADDR):
     string = '1:{0}->syscollector:{1}'.format(location, json.dumps(os_data))
     try:
@@ -208,7 +222,72 @@ def setOS(os_data, location, SOCKET_ADDR):
     except FileNotFoundError:
         logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
         exit(4)
+
+def setNetIface(netiface_data, location, SOCKET_ADDR):
+    for netiface in netiface_data:
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(netiface))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
+
+def setNetAddr(netaddr_data, location, SOCKET_ADDR):
+    for netiface in netaddr_data:
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(netiface))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
+
+def setProto(proto_data, location, SOCKET_ADDR):
+    for protocol in proto_data:
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(protocol))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
             
+def setPackage(package_data, location, SOCKET_ADDR):
+    for package in package_data:
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(package))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
+
+def setPort(port_data, location, SOCKET_ADDR):
+    for port in port_data:
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(port))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)   
+    
 if __name__ == "__main__":
     # Initial values
     token = None
@@ -248,16 +327,21 @@ if __name__ == "__main__":
         for agent in agent_list:
             agent["hardware"] = getAgentHardware(agent["id"])
             setHardware(agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
-            #agent["processes"] = getAgentProcesses(agent["id"])
-            #setProcess(agent["processes"])
+            agent["processes"] = getAgentProcesses(agent["id"])
+            setProcess(agent["processes"])
             agent["os"] = getAgentOS(agent["id"])
             setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
-            #agent["netiface"] = getAgentNetifaces(agent["id"])
-            #agent["netaddr"] = getAgentNetaddr(agent["id"])
+            agent["netiface"] = getAgentNetifaces(agent["id"])
+            setNetIface(agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
+            agent["netaddr"] = getAgentNetaddr(agent["id"])
+            setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
             # TO-DO, validate with os content present
             #if agent["os"]["os"]["name"] == "Windows":
             #    agent["hotfix"] = getAgentHotfixes(agent["id"])
-            #agent["proto"] = getAgentProto(agent["id"])
-            #agent["packages"] = getAgentPackages(agent["id"])
-            #agent["ports"] = getAgentPorts(agent["id"])
+            agent["proto"] = getAgentProto(agent["id"])
+            setProto(agent["proto"], 'wazuh-manager', SOCKET_ADDR)
+            agent["packages"] = getAgentPackages(agent["id"])
+            setPackage(agent["packages"], 'wazuh-manager', SOCKET_ADDR)
+            agent["ports"] = getAgentPorts(agent["id"])
+            setPort(agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
         #print(agent_list)
