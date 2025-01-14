@@ -197,7 +197,7 @@ def setHardware(hardware_data, location , SOCKET_ADDR):
         logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
         exit(4)
 
-def setOS(os_data, location,  , SOCKET_ADDR):
+def setOS(os_data, location, SOCKET_ADDR):
     string = '1:{0}->syscollector:{1}'.format(location, os_data)
     try:
         sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -247,11 +247,11 @@ if __name__ == "__main__":
         getAgentList()
         for agent in agent_list:
             agent["hardware"] = getAgentHardware(agent["id"])
-            setHardware(agent["hardware"][0])
+            setHardware(agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
             #agent["processes"] = getAgentProcesses(agent["id"])
             #setProcess(agent["processes"])
             agent["os"] = getAgentOS(agent["id"])
-            setOS(agent["os"][0])
+            setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
             #agent["netiface"] = getAgentNetifaces(agent["id"])
             #agent["netaddr"] = getAgentNetaddr(agent["id"])
             # TO-DO, validate with os content present
