@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/var/ossec/framework/python/bin/python3
 
 # Requirements
 import sys
@@ -74,7 +74,7 @@ def getSyscheck(agent_id):
 def setSyscheck(fim_data, agent_id, location, SOCKET_ADDR):
     for data in fim_data:
         data["agent_id"]= agent_id
-        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(data))
+        string = '1:{0}->syscheck:{1}'.format(location, json.dumps(data))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
             sock.connect(SOCKET_ADDR)

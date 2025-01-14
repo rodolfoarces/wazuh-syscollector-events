@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/var/ossec/framework/python/bin/python3
 
 # Requirements
 import sys
