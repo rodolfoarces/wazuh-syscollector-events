@@ -37,7 +37,7 @@ To trigger alerts based on these events, you will need the following rules prese
 <group name="syscheck,">
     <rule id="100003" level="3">
         <location>wazuh-manager->syscheck</location>
-        <description>Syscollector event</description>
+        <description>Syscheck event</description>
     </rule>
 </group>
 
