@@ -194,7 +194,10 @@ def setHardware(hardware_data):
                         "ram": { "free": hardware_data["ram"]["free"], 
                         "total": hardware_data["ram"]["total"], 
                         "usage": hardware_data["ram"]["usage"]},
-                        "agent_id": hardware_data["agent_id"]
+                        "agent_id": hardware_data["agent_id"],
+                        "board_serial": hardware_data["board_serial"],
+                        "scan": { "id": hardware_data["scan"]["id"], 
+                        "time": hardware_data["scan"]["time"]}
                         }
     msg_data = { "events": [ str(hardware_content) ] }
     msg_url = manager_url + "/events?wait_for_complete=true" 
