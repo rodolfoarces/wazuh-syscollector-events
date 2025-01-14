@@ -205,16 +205,46 @@ def setHardware(hardware_data):
     r = json.loads(forward_request.content.decode('utf-8'))
     # Check 
     if forward_request.status_code != 200:
-        logger.error("There were errors sending the logs")
+        logger.error("There were errors sending the hardware logs")
         logger.debug(r)
     else:
         logger.debug(r)
 
+def setProcess(process_data_list):
+    for process_data in process_data_list:
+        msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+        process_content = { "size": process_data["size"],
+                           "utime": process_data["utime"],
+                           "ppid": process_data["ppid"],
+                           "name": process_data["name"],
+                           "vm_size": process_data["vm_size"],
+                           "session": process_data["session"],
+                           "start_time": process_data["start_time"],
+                           "priority": process_data["priority"],
+                           "cmd": process_data["cmd"],
+                           "stime": process_data["stime"],
+                           "pid": process_data["pid"],
+                           "nlwp": process_data["nlwp"],
+                           "agent_id": process_data["agent_id"],
+                            "scan": { "id": process_data["scan"]["id"], 
+                            "time": process_data["scan"]["time"]}
+                            }
+        msg_data = { "events": [ str(process_content) ] }
+        msg_url = manager_url + "/events?wait_for_complete=true" 
+        forward_request = requests.post(msg_url, json=msg_data, headers=msg_headers, verify=False)
+        r = json.loads(forward_request.content.decode('utf-8'))
+        # Check 
+        if forward_request.status_code != 200:
+            logger.error("There were errors sending the process events")
+            logger.debug(r)
+        else:
+            logger.debug(r)
+            
 if __name__ == "__main__":
     # Initial values
     token = None
-    username = "wazuh"
-    password = "wazuh"
+    manager_username = "wazuh"
+    manager_password = "wazuh"
     manager_host = "localhost"
     manager_api_port = "55000"
     manager_url = "https://" + manager_host + ":" + manager_api_port
@@ -248,7 +278,8 @@ if __name__ == "__main__":
         for agent in agent_list:
             agent["hardware"] = getAgentHardware(agent["id"])
             setHardware(agent["hardware"][0])
-            #agent["processes"] = getAgentProcesses(agent["id"])
+            agent["processes"] = getAgentProcesses(agent["id"])
+            setProcess(agent["processes"])
             #agent["os"] = getAgentOS(agent["id"])
             #agent["netiface"] = getAgentNetifaces(agent["id"])
             #agent["netaddr"] = getAgentNetaddr(agent["id"])
