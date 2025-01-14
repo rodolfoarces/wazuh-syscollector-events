@@ -8,7 +8,7 @@ import logging
 import time
 import configparser
 import os.path
-from requests.auth import HTTPBasicAuth
+from socket import AF_UNIX, SOCK_DGRAM, socket
 
 # Additional configurations
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
@@ -185,44 +185,29 @@ def getAgentPorts(agent_id):
         return r['data']['affected_items']
 
 # Post Actions
-def setHardware(hardware_data):
-    # API processing
-    msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    hardware_content = { "cpu": { "cores": hardware_data["cpu"]["cores"], 
-                        "mhz": hardware_data["cpu"]["mhz"], 
-                        "name": hardware_data["cpu"]["name"]},
-                        "ram": { "free": hardware_data["ram"]["free"], 
-                        "total": hardware_data["ram"]["total"], 
-                        "usage": hardware_data["ram"]["usage"]},
-                        "agent_id": hardware_data["agent_id"],
-                        "board_serial": hardware_data["board_serial"],
-                        "scan": { "id": hardware_data["scan"]["id"], 
-                        "time": hardware_data["scan"]["time"]}
-                        }
-    msg_data = { "events": [ str(hardware_content) ] }
-    msg_url = manager_url + "/events?wait_for_complete=true" 
-    forward_request = requests.post(msg_url, json=msg_data, headers=msg_headers, verify=False)
-    r = json.loads(forward_request.content.decode('utf-8'))
-    # Check 
-    if forward_request.status_code != 200:
-        logger.error("There were errors sending the hardware logs")
-        logger.debug(r)
-    else:
-        logger.debug(r)
+def setHardware(hardware_data, location , SOCKET_ADDR):
+    string = '1:{0}->syscollector:{1}'.format(location, hardware_data)
+    try:
+        sock = socket(AF_UNIX, SOCK_DGRAM)
+        sock.connect(SOCKET_ADDR)
+        sock.send(string.encode())
+        sock.close()
+        logger.debug(string)
+    except FileNotFoundError:
+        logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+        exit(4)
 
-def setProcess(process_data_list):
-    for process_data in process_data_list:
-        msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-        msg_data = { "events": [ str(process_data) ] }
-        msg_url = manager_url + "/events?wait_for_complete=true" 
-        forward_request = requests.post(msg_url, json=msg_data, headers=msg_headers, verify=False)
-        r = json.loads(forward_request.content.decode('utf-8'))
-        # Check 
-        if forward_request.status_code != 200:
-            logger.error("There were errors sending the process events")
-            logger.debug(r)
-        else:
-            logger.debug(r)
+def setOS(os_data, location,  , SOCKET_ADDR):
+    string = '1:{0}->syscollector:{1}'.format(location, os_data)
+    try:
+        sock = socket(AF_UNIX, SOCK_DGRAM)
+        sock.connect(SOCKET_ADDR)
+        sock.send(string.encode())
+        sock.close()
+        logger.debug(string)
+    except FileNotFoundError:
+        logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+        exit(4)
             
 if __name__ == "__main__":
     # Initial values
@@ -232,7 +217,8 @@ if __name__ == "__main__":
     manager_host = "localhost"
     manager_api_port = "55000"
     manager_url = "https://" + manager_host + ":" + manager_api_port
-
+    SOCKET_ADDR = f'/var/ossec/queue/sockets/queue'
+    
     # Configurations
     config_filename = "syscollector-report.conf"
     # Load data from configuration file
@@ -262,9 +248,10 @@ if __name__ == "__main__":
         for agent in agent_list:
             agent["hardware"] = getAgentHardware(agent["id"])
             setHardware(agent["hardware"][0])
-            agent["processes"] = getAgentProcesses(agent["id"])
-            setProcess(agent["processes"])
-            #agent["os"] = getAgentOS(agent["id"])
+            #agent["processes"] = getAgentProcesses(agent["id"])
+            #setProcess(agent["processes"])
+            agent["os"] = getAgentOS(agent["id"])
+            setOS(agent["os"][0])
             #agent["netiface"] = getAgentNetifaces(agent["id"])
             #agent["netaddr"] = getAgentNetaddr(agent["id"])
             # TO-DO, validate with os content present
