@@ -186,7 +186,7 @@ def getAgentPorts(agent_id):
 
 # Post Actions
 def setHardware(hardware_data, location , SOCKET_ADDR):
-    string = '1:{0}->syscollector:{1}'.format(location, hardware_data)
+    string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hardware_data))
     try:
         sock = socket(AF_UNIX, SOCK_DGRAM)
         sock.connect(SOCKET_ADDR)
@@ -198,7 +198,7 @@ def setHardware(hardware_data, location , SOCKET_ADDR):
         exit(4)
 
 def setOS(os_data, location, SOCKET_ADDR):
-    string = '1:{0}->syscollector:{1}'.format(location, os_data)
+    string = '1:{0}->syscollector:{1}'.format(location, json.dumps(os_data))
     try:
         sock = socket(AF_UNIX, SOCK_DGRAM)
         sock.connect(SOCKET_ADDR)
