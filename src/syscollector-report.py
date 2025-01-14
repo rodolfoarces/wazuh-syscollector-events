@@ -286,6 +286,19 @@ def setPort(port_data, location, SOCKET_ADDR):
             logger.debug(string)
         except FileNotFoundError:
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
+
+def setHotfix(hotfix_data, location, SOCKET_ADDR):
+    for hotfix in hotfix_data:
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hotfix))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)   
     
 if __name__ == "__main__":
@@ -336,8 +349,11 @@ if __name__ == "__main__":
             agent["netaddr"] = getAgentNetaddr(agent["id"])
             setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
             # TO-DO, validate with os content present
-            #if agent["os"]["os"]["name"] == "Windows":
-            #    agent["hotfix"] = getAgentHotfixes(agent["id"])
+            if 'windows' in agent["os"][0]["os"]["platform"] or 'Microsoft' in agent["os"][0]["os"]["name"]  : 
+                agent["hotfix"] = getAgentHotfixes(agent["id"])
+                setHotfix(agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
+            else:
+                logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
             agent["proto"] = getAgentProto(agent["id"])
             setProto(agent["proto"], 'wazuh-manager', SOCKET_ADDR)
             agent["packages"] = getAgentPackages(agent["id"])
