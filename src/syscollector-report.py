@@ -328,7 +328,7 @@ if __name__ == "__main__":
             agent["hardware"] = getAgentHardware(agent["id"])
             setHardware(agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
             agent["processes"] = getAgentProcesses(agent["id"])
-            setProcess(agent["processes"])
+            setProcess(agent["processes"],'wazuh-manager', SOCKET_ADDR)
             agent["os"] = getAgentOS(agent["id"])
             setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
             agent["netiface"] = getAgentNetifaces(agent["id"])
