@@ -16,7 +16,7 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 ## Logging options
 # https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook
 # create file handler which logs even debug messages
-logger = logging.getLogger("syscollector-report")
+logger = logging.getLogger("fim-report")
 logger.setLevel(logging.DEBUG)
 fh = logging.StreamHandler()
 fh.setLevel(logging.DEBUG)
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     # Connect to API
     token = apiAuthenticate(manager_url, manager_username, manager_password)
     if token == None:
-        logger.debug("Error coonecting, exiting")
+        logger.debug("Error connecting to the API, exiting")
         exit(1)
     else:
         getAgentList()

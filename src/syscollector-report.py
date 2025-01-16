@@ -334,7 +334,7 @@ if __name__ == "__main__":
     # Connect to API
     token = apiAuthenticate(manager_url, manager_username, manager_password)
     if token == None:
-        logger.debug("Error coonecting, exiting")
+        logger.debug("Error connecting to the API, exiting")
         exit(1)
     else:
         getAgentList()
