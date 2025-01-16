@@ -338,26 +338,26 @@ if __name__ == "__main__":
     else:
         getAgentList()
         for agent in agent_list:
-            agent["hardware"] = getAgentHardware(agent["id"])
-            setHardware(agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
-            agent["processes"] = getAgentProcesses(agent["id"])
-            setProcess(agent["processes"],'wazuh-manager', SOCKET_ADDR)
-            agent["os"] = getAgentOS(agent["id"])
-            setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
-            agent["netiface"] = getAgentNetifaces(agent["id"])
-            setNetIface(agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
-            agent["netaddr"] = getAgentNetaddr(agent["id"])
-            setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
-            # TO-DO, validate with os content present
-            if 'Microsoft' in agent["os"][0]["os"]["name"]: 
-                agent["hotfix"] = getAgentHotfixes(agent["id"])
-                setHotfix(agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
-            else:
-                logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
-            agent["proto"] = getAgentProto(agent["id"])
-            setProto(agent["proto"], 'wazuh-manager', SOCKET_ADDR)
-            agent["packages"] = getAgentPackages(agent["id"])
-            setPackage(agent["packages"], 'wazuh-manager', SOCKET_ADDR)
-            agent["ports"] = getAgentPorts(agent["id"])
-            setPort(agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
-        #print(agent_list)
+            if agent["id"] != '000':
+                agent["hardware"] = getAgentHardware(agent["id"])
+                setHardware(agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
+                agent["processes"] = getAgentProcesses(agent["id"])
+                setProcess(agent["processes"],'wazuh-manager', SOCKET_ADDR)
+                agent["os"] = getAgentOS(agent["id"])
+                setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
+                agent["netiface"] = getAgentNetifaces(agent["id"])
+                setNetIface(agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
+                agent["netaddr"] = getAgentNetaddr(agent["id"])
+                setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
+                # TO-DO, validate with os content present
+                if 'Microsoft' in agent["os"][0]["os"]["name"]: 
+                    agent["hotfix"] = getAgentHotfixes(agent["id"])
+                    setHotfix(agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
+                else:
+                    logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
+                agent["proto"] = getAgentProto(agent["id"])
+                setProto(agent["proto"], 'wazuh-manager', SOCKET_ADDR)
+                agent["packages"] = getAgentPackages(agent["id"])
+                setPackage(agent["packages"], 'wazuh-manager', SOCKET_ADDR)
+                agent["ports"] = getAgentPorts(agent["id"])
+                setPort(agent["ports"] , 'wazuh-manager', SOCKET_ADDR)

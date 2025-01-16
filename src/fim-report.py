@@ -122,5 +122,6 @@ if __name__ == "__main__":
     else:
         getAgentList()
         for agent in agent_list:
-            agent["syscheck"] = getSyscheck(agent["id"])
-            setSyscheck(agent["syscheck"], agent["id"], 'wazuh-manager', SOCKET_ADDR)
+            if agent["id"] != '000':
+                agent["syscheck"] = getSyscheck(agent["id"])
+                setSyscheck(agent["syscheck"], agent["id"], 'wazuh-manager', SOCKET_ADDR)
