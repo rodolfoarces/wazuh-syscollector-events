@@ -41,7 +41,7 @@ It can also be executed as a wodle
 
 <wodle name="command">
   <disabled>no</disabled>
-  <tag>fim-report</tag>
+  <tag>syscollector-report</tag>
   <command>/var/ossec/wodles/syscollector-report.py</command>
   <interval>30m</interval>
   <ignore_output>yes</ignore_output>
@@ -50,6 +50,12 @@ It can also be executed as a wodle
   <skip_verification>yes</skip_verification>
 </wodle>
 </ossec_config>
+```
+
+The previous configuration requires the following parameter set on the `etc/local_internal_options.conf` file
+
+```
+wazuh_command.remote_commands=1
 ```
 
 To trigger alerts based on these events, you will need the following rules present, adjust the rule ids acordingly:
