@@ -69,7 +69,6 @@ def getSyscheck(agent_id):
         exit(6)
     else:
         #logger.debug(r)
-        logger.debug([*get_keys(r['data']['affected_items'])])
         return r['data']['affected_items']
         
 def setSyscheck(fim_data, agent_id, location, SOCKET_ADDR):
@@ -85,16 +84,6 @@ def setSyscheck(fim_data, agent_id, location, SOCKET_ADDR):
         except FileNotFoundError:
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)
-
-def get_keys(d, curr_key=[]):
-    for k, v in d.items():
-        if isinstance(v, dict):
-            yield from get_keys(v, curr_key + [k])
-        elif isinstance(v, list):
-            for i in v:
-                yield from get_keys(i, curr_key + [k])
-        else:
-            yield '.'.join(curr_key + [k])
 
 if __name__ == "__main__":
     # Initial values
