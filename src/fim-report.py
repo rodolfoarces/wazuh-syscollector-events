@@ -57,9 +57,9 @@ def getAgentList():
         for agent in r['data']['affected_items']: 
             agent_list.append(agent)
 
-def getSyscheck(agent_id):
+def getSyscheck(agent_id, limit=1000):
     file_list = []
-    file_limit = 1000
+    file_limit = limit
     file_total = 0
     # API processing
     logger.debug("Obtaining the first %d files", file_limit)
@@ -155,5 +155,5 @@ if __name__ == "__main__":
         getAgentList()
         for agent in agent_list:
             if agent["id"] != '000':
-                agent["syscheck"] = getSyscheck(agent["id"])
+                agent["syscheck"] = getSyscheck(agent["id"], 1000)
                 setSyscheck(agent["syscheck"], agent["id"], 'wazuh-manager', SOCKET_ADDR)
