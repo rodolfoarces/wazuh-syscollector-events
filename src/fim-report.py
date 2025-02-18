@@ -62,9 +62,9 @@ def getSyscheck(agent_id):
     file_limit = 1000
     file_total = 0
     # API processing
-    logger.debug("Obtaining the first 1000 files")
+    logger.debug("Obtaining the first %d files", file_limit)
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscheck/" + agent_id + "?wait_for_complete=true&limit=" + file_limit 
+    msg_url = manager_url + "/syscheck/" + agent_id + "?wait_for_complete=true&limit=" + str(file_limit) 
     agent_package_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_package_request.content.decode('utf-8'))
     # First check and validating total ammount of files
@@ -73,17 +73,20 @@ def getSyscheck(agent_id):
         exit(6)
     else:
         #logger.debug(r)
+        # Adding files to the list
         for file in r['data']['affected_items']:
             file_list.append(file)
         
+        # Setting the total amount of files
         if file_total == 0 and int(r['data']['total_affected_items']) > file_limit:
             file_total = int(r['data']['total_affected_items'])
         
-        while file_list.count() != file_total:
+        # Processing all the file list
+        while len(file_list) < file_total:
             # API processing
             logger.debug("Obtaining next %d files of %d", file_limit, file_total)
             msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-            msg_url = manager_url + "/syscheck/" + agent_id + "?wait_for_complete=true&limit=" + file_limit 
+            msg_url = manager_url + "/syscheck/" + agent_id + "?wait_for_complete=true&limit=" + str(file_limit) + "&offset=" + str(len(file_list)) 
             agent_package_request = requests.get(msg_url, headers=msg_headers, verify=False)
             r = json.loads(agent_package_request.content.decode('utf-8'))
             if agent_package_request.status_code != 200:
@@ -92,7 +95,9 @@ def getSyscheck(agent_id):
             else:
                 for file in r['data']['affected_items']:
                     file_list.append(file)
-                logger.debug("Current file count %d out of %d", file_list.count(), file_total)
+                logger.debug("Current file count %d out of %d", len(file_list), file_total)
+        
+        # Returning the values
         logger.debug("Finish obtaining files")
         return file_list        
             
