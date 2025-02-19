@@ -17,9 +17,9 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 # https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook
 # create file handler which logs even debug messages
 logger = logging.getLogger("fim-report")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 fh = logging.StreamHandler()
-fh.setLevel(logging.DEBUG)
+fh.setLevel(logging.INFO)
 fh_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(fh_formatter)
 logger.addHandler(fh)
@@ -80,6 +80,9 @@ def getSyscheck(agent_id, limit=1000):
         # Setting the total amount of files
         if file_total == 0 and int(r['data']['total_affected_items']) > file_limit:
             file_total = int(r['data']['total_affected_items'])
+            logger.info("Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), file_limit )
+        elif int(r['data']['total_affected_items']) < file_limit:
+            logger.info("Obtaining %d events", int(r['data']['total_affected_items']) )
         
         # Processing all the file list
         while len(file_list) < file_total:
@@ -104,6 +107,7 @@ def getSyscheck(agent_id, limit=1000):
 def setSyscheck(fim_data, agent_id, location, socket_address, limit=1000):
     forward_limit = limit
     counter = 0
+    logger.info("Forwarding %d events, in batches of %d events", len(fim_data), int(forward_limit))
     for data in fim_data:
         if counter >= forward_limit:
             time.sleep(1)
@@ -138,7 +142,7 @@ if __name__ == "__main__":
     config_filename = str(os.path.join(script_dir, "syscollector-report.conf"))
     # Load data from configuration file
     if os.path.isfile(config_filename):
-        logger.debug("Opening configuration file")
+        logger.info("Opening configuration file")
         config = configparser.ConfigParser()
         config.read(config_filename)
         # Wazuh manager connection
@@ -154,6 +158,7 @@ if __name__ == "__main__":
     agent_list = []
 
     # Connect to API
+    logger.info("Authenticating to Wazuh Server API")
     token = apiAuthenticate(manager_url, manager_username, manager_password)
     if token == None:
         logger.debug("Error connecting to the API, exiting")
@@ -162,5 +167,8 @@ if __name__ == "__main__":
         getAgentList()
         for agent in agent_list:
             if agent["id"] != '000':
+                logger.info("Obtaining information from agent %s", str(agent["id"]))
                 agent["syscheck"] = getSyscheck(agent["id"], 1000)
+                logger.info("Forwarding information from agent %s", str(agent["id"]))
                 setSyscheck(agent["syscheck"], agent["id"], 'wazuh-manager', SOCKET_ADDR)
+                logger.info("Finished forwarding information from agent %s", str(agent["id"]))
