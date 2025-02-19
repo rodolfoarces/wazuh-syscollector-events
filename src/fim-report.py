@@ -101,19 +101,26 @@ def getSyscheck(agent_id, limit=1000):
         logger.debug("Finish obtaining files")
         return file_list        
             
-        
-def setSyscheck(fim_data, agent_id, location, SOCKET_ADDR):
+def setSyscheck(fim_data, agent_id, location, socket_address, limit=1000):
+    forward_limit = limit
+    counter = 0
     for data in fim_data:
+        if counter >= forward_limit:
+            time.sleep(1)
+            counter = 0
+            logger.debug("Pausing 1 second after %d events", int(forward_limit))
+            
         data["agent_id"]= agent_id
         string = '1:{0}->syscheck:{1}'.format(location, json.dumps(data))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
+            sock.connect(socket_address)
             sock.send(string.encode())
             sock.close()
             logger.debug(string)
+            counter += 1
         except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            logger.debug('Error: Unable to open socket connection at %s' % socket_address)
             exit(4)
 
 if __name__ == "__main__":
