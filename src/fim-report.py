@@ -51,7 +51,7 @@ def getAgentList():
         exit(2)
     
     if r['data']['total_affected_items'] <= 1:
-        logger.debug("No agents")
+        logger.error("No agents")
         exit(3)
     else:
         for agent in r['data']['affected_items']: 
@@ -124,7 +124,7 @@ def setSyscheck(fim_data, agent_id, location, socket_address, limit=1000):
             logger.debug(string)
             counter += 1
         except FileNotFoundError:
-            logger.debug('Error: Unable to open socket connection at %s' % socket_address)
+            logger.error('Error: Unable to open socket connection at %s' % socket_address)
             exit(4)
 
 if __name__ == "__main__":
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     logger.info("Authenticating to Wazuh Server API")
     token = apiAuthenticate(manager_url, manager_username, manager_password)
     if token == None:
-        logger.debug("Error connecting to the API, exiting")
+        logger.error("Error connecting to the API, exiting")
         exit(1)
     else:
         getAgentList()
