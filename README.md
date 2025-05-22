@@ -21,10 +21,9 @@ It can also be executed as a wodle
 
 ```
 <ossec_config>
-
 <wodle name="command">
   <disabled>no</disabled>
-  <tag>syscollector-report</tag>
+  <tag>wazuh-syscollector-events</tag>
   <command>/var/ossec/wodles/wazuh-syscollector-events.py</command>
   <interval>30m</interval>
   <ignore_output>yes</ignore_output>
@@ -46,7 +45,7 @@ To trigger alerts based on these events, you will need the following rules prese
 ```
 <group name="syscollector,">
     <rule id="100002" level="3">
-        <location>wazuh-manager->syscollector</location>
+        <location>syscollector</location>
         <description>Syscollector event</description>
     </rule>
 </group>
