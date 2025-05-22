@@ -313,7 +313,7 @@ if __name__ == "__main__":
     
     # Configurations
     script_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
-    config_filename = str(os.path.join(script_dir, "syscollector-report.conf"))
+    config_filename = str(os.path.join(script_dir, "wazuh-syscollector-events.conf"))
     # Load data from configuration file
     if os.path.isfile(config_filename):
         logger.debug("Opening configuration file")
