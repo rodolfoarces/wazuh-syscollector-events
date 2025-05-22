@@ -185,7 +185,11 @@ def getAgentPorts(agent_id):
         return r['data']['affected_items']
 
 # Post Actions
-def setHardware(hardware_data, location , SOCKET_ADDR):
+def setHardware(agent_data, hardware_data, location , SOCKET_ADDR):
+    hardware_data["endpoint"] = "hardware"
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+
     string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hardware_data))
     try:
         sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -197,9 +201,12 @@ def setHardware(hardware_data, location , SOCKET_ADDR):
         logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
         exit(4)
 
-def setProcess(process_data, location , SOCKET_ADDR):
-    count = 0
+def setProcess(agent_data, process_data, location , SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+
     for process in process_data:
+        process["endpoint"] = "processes"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(process))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -211,7 +218,11 @@ def setProcess(process_data, location , SOCKET_ADDR):
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)
 
-def setOS(os_data, location, SOCKET_ADDR):
+def setOS(agent_data, os_data, location, SOCKET_ADDR):
+    os_data["endpoint"] = "os"
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+    
     string = '1:{0}->syscollector:{1}'.format(location, json.dumps(os_data))
     try:
         sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -223,8 +234,12 @@ def setOS(os_data, location, SOCKET_ADDR):
         logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
         exit(4)
 
-def setNetIface(netiface_data, location, SOCKET_ADDR):
+def setNetIface(agent_data, netiface_data, location, SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+    
     for netiface in netiface_data:
+        netiface["endpoint"] = "network_interfaces"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(netiface))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -236,9 +251,13 @@ def setNetIface(netiface_data, location, SOCKET_ADDR):
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)
 
-def setNetAddr(netaddr_data, location, SOCKET_ADDR):
-    for netiface in netaddr_data:
-        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(netiface))
+def setNetAddr(agent_data, netaddr_data, location, SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+    
+    for netaddr in netaddr_data:
+        netaddr["endpoint"] = "network_addresses"
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(netaddr))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
             sock.connect(SOCKET_ADDR)
@@ -249,8 +268,12 @@ def setNetAddr(netaddr_data, location, SOCKET_ADDR):
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)
 
-def setProto(proto_data, location, SOCKET_ADDR):
+def setProto(agent_data, proto_data, location, SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+    
     for protocol in proto_data:
+        protocol["endpoint"] = "network_protocols"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(protocol))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -262,8 +285,12 @@ def setProto(proto_data, location, SOCKET_ADDR):
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)
             
-def setPackage(package_data, location, SOCKET_ADDR):
+def setPackage(agent_data, package_data, location, SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+    
     for package in package_data:
+        package["endpoint"] = "packages"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(package))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -275,8 +302,12 @@ def setPackage(package_data, location, SOCKET_ADDR):
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)
 
-def setPort(port_data, location, SOCKET_ADDR):
+def setPort(agent_data, port_data, location, SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+    
     for port in port_data:
+        port["endpoint"] = "network_ports"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(port))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -288,8 +319,12 @@ def setPort(port_data, location, SOCKET_ADDR):
             logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
             exit(4)
 
-def setHotfix(hotfix_data, location, SOCKET_ADDR):
+def setHotfix(agent_data, hotfix_data, location, SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+    
     for hotfix in hotfix_data:
+        hotfix["endpoint"] = "hotfixes"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hotfix))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -313,7 +348,7 @@ if __name__ == "__main__":
     
     # Configurations
     script_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
-    config_filename = str(os.path.join(script_dir, "syscollector-report.conf"))
+    config_filename = str(os.path.join(script_dir, "wazuh-syscollector-events.conf"))
     # Load data from configuration file
     if os.path.isfile(config_filename):
         logger.debug("Opening configuration file")
@@ -340,25 +375,26 @@ if __name__ == "__main__":
         getAgentList()
         for agent in agent_list:
             if agent["id"] != '000':
+                agent_data = { "id": agent["id"], "name": agent["name"], "ip": agent["ip"] }
                 agent["hardware"] = getAgentHardware(agent["id"])
-                setHardware(agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
+                setHardware(agent_data, agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
                 agent["processes"] = getAgentProcesses(agent["id"])
-                setProcess(agent["processes"],'wazuh-manager', SOCKET_ADDR)
+                setProcess(agent_data, agent["processes"],'wazuh-manager', SOCKET_ADDR)
                 agent["os"] = getAgentOS(agent["id"])
-                setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
+                setOS(agent_data, agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
                 agent["netiface"] = getAgentNetifaces(agent["id"])
-                setNetIface(agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
+                setNetIface(agent_data, agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
                 agent["netaddr"] = getAgentNetaddr(agent["id"])
-                setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
+                setNetAddr(agent_data, agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
                 # TO-DO, validate with os content present
                 if 'Microsoft' in agent["os"][0]["os"]["name"]: 
                     agent["hotfix"] = getAgentHotfixes(agent["id"])
-                    setHotfix(agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
+                    setHotfix(agent_data, agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
                 else:
                     logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
                 agent["proto"] = getAgentProto(agent["id"])
-                setProto(agent["proto"], 'wazuh-manager', SOCKET_ADDR)
+                setProto(agent_data, agent["proto"], 'wazuh-manager', SOCKET_ADDR)
                 agent["packages"] = getAgentPackages(agent["id"])
-                setPackage(agent["packages"], 'wazuh-manager', SOCKET_ADDR)
+                setPackage(agent_data, agent["packages"], 'wazuh-manager', SOCKET_ADDR)
                 agent["ports"] = getAgentPorts(agent["id"])
-                setPort(agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
+                setPort(agent_data, agent["ports"] , 'wazuh-manager', SOCKET_ADDR)

@@ -5,44 +5,27 @@ To obtain index data from syscheck and syscollector, these helper scripts can he
 You will need to download the files and place them in a directory in the Wauh Manager (Master or Worker)
 
 ```
-curl -LO https://raw.githubusercontent.com/rodolfoarces/syscollector-report/refs/heads/dev/src/syscollector-report.py && chmod 700 ./syscollector-report.py
-curl -LO  https://raw.githubusercontent.com/rodolfoarces/syscollector-report/refs/heads/dev/src/fim-report.py && chmod 700 ./fim-report.py
-curl -L https://raw.githubusercontent.com/rodolfoarces/syscollector-report/refs/heads/dev/src/example.syscollector-report.conf -o ./syscollector-report.conf
+curl -L https://raw.githubusercontent.com/rodolfoarces/wazuh-syscollector-events/refs/heads/dev/src/wazuh-syscollector-events.py && chmod 700 ./wazuh-syscollector-events.py
+curl -L https://raw.githubusercontent.com/rodolfoarces/wazuh-syscollector-events/refs/heads/dev/src/example.wazuh-syscollector-events.conf -o ./wazuh-syscollector-events.conf
 ```
 
-The `/var/ossec/wodles/syscollector-report.conf` is to be adjusted acordigly to the Wazuh Server API user.
+The `/var/ossec/wodles/wazuh-syscollector-events.conf` is to be adjusted acordigly to the Wazuh Server API user.
 
 To execute the Syscollector helper
 
 ```
-/var/ossec/framework/python/bin/python3 /var/ossec/wodles/syscollector-report.py
-```
-
-To execute the Syscheck helper
-
-```
-/var/ossec/framework/python/bin/python3 /var/ossec/wodles/fim-report.py
+/var/ossec/framework/python/bin/python3 /var/ossec/wodles/wazuh-syscollector-events.py
 ```
 
 It can also be executed as a wodle
 
 ```
 <ossec_config>
-<wodle name="command">
-  <disabled>no</disabled>
-  <tag>fim-report</tag>
-  <command>/var/ossec/wodles/fim-report.py</command>
-  <interval>30m</interval>
-  <ignore_output>yes</ignore_output>
-  <run_on_start>no</run_on_start>
-  <timeout>0</timeout>
-  <skip_verification>yes</skip_verification>
-</wodle>
 
 <wodle name="command">
   <disabled>no</disabled>
   <tag>syscollector-report</tag>
-  <command>/var/ossec/wodles/syscollector-report.py</command>
+  <command>/var/ossec/wodles/wazuh-syscollector-events.py</command>
   <interval>30m</interval>
   <ignore_output>yes</ignore_output>
   <run_on_start>no</run_on_start>
@@ -65,13 +48,6 @@ To trigger alerts based on these events, you will need the following rules prese
     <rule id="100002" level="3">
         <location>wazuh-manager->syscollector</location>
         <description>Syscollector event</description>
-    </rule>
-</group>
-
-<group name="syscheck,">
-    <rule id="100003" level="3">
-        <location>wazuh-manager->syscheck</location>
-        <description>Syscheck event</description>
     </rule>
 </group>
 
@@ -236,27 +212,17 @@ PUT _ingest/pipeline/filebeat-7.10.2-wazuh-alerts-pipeline
       },
 		{
 			"date_index_name": {
-				"if": "ctx?.location == 'wazuh-manager->syscheck'",
-				"field": "timestamp",
-				"date_rounding": "d",
-				"index_name_prefix": "{{fields.index_prefix}}reports-",
-				"index_name_format": "yyyy.MM.dd",
-				"ignore_failure": true
-			}
-		},
-		{
-			"date_index_name": {
 				"if": "ctx?.location == 'wazuh-manager->syscollector'",
 				"field": "timestamp",
 				"date_rounding": "d",
-				"index_name_prefix": "{{fields.index_prefix}}reports-",
+				"index_name_prefix": "{{fields.index_prefix}}syscollector-",
 				"index_name_format": "yyyy.MM.dd",
 				"ignore_failure": true
 			}
 		},
       {
         "date_index_name": {
-			"if": "ctx?.location != 'wazuh-manager->syscheck' && ctx?.location != 'wazuh-manager->syscollector'",
+			"if": "ctx?.location != 'wazuh-manager->syscollector'",
 			"field": "timestamp",
 			"date_rounding": "d",
 			"index_name_prefix": "fields.index_prefix",
