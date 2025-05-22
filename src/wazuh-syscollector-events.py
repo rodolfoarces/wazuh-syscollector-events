@@ -185,7 +185,11 @@ def getAgentPorts(agent_id):
         return r['data']['affected_items']
 
 # Post Actions
-def setHardware(hardware_data, location , SOCKET_ADDR):
+def setHardware(agent_data, hardware_data, location , SOCKET_ADDR):
+    hardware_data["endpoint"] = "hardware"
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+
     string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hardware_data))
     try:
         sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -197,9 +201,12 @@ def setHardware(hardware_data, location , SOCKET_ADDR):
         logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
         exit(4)
 
-def setProcess(process_data, location , SOCKET_ADDR):
-    count = 0
+def setProcess(agent_data, process_data, location , SOCKET_ADDR):
+    location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
+    location = location.replace('|', '||').replace(':', '|:')
+
     for process in process_data:
+        process["endpoint"] = "processes"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(process))
         try:
             sock = socket(AF_UNIX, SOCK_DGRAM)
@@ -340,25 +347,26 @@ if __name__ == "__main__":
         getAgentList()
         for agent in agent_list:
             if agent["id"] != '000':
+                agent_data = { "id": agent["id"], "name": agent["name"], "ip": agent["ip"] }
                 agent["hardware"] = getAgentHardware(agent["id"])
-                setHardware(agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
+                setHardware(agent_data, agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
                 agent["processes"] = getAgentProcesses(agent["id"])
-                setProcess(agent["processes"],'wazuh-manager', SOCKET_ADDR)
-                agent["os"] = getAgentOS(agent["id"])
-                setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
-                agent["netiface"] = getAgentNetifaces(agent["id"])
-                setNetIface(agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
-                agent["netaddr"] = getAgentNetaddr(agent["id"])
-                setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
+                setProcess(agent_data, agent["processes"],'wazuh-manager', SOCKET_ADDR)
+                #agent["os"] = getAgentOS(agent["id"])
+                #setOS(agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
+                #agent["netiface"] = getAgentNetifaces(agent["id"])
+                #setNetIface(agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
+                #agent["netaddr"] = getAgentNetaddr(agent["id"])
+                #setNetAddr(agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
                 # TO-DO, validate with os content present
-                if 'Microsoft' in agent["os"][0]["os"]["name"]: 
-                    agent["hotfix"] = getAgentHotfixes(agent["id"])
-                    setHotfix(agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
-                else:
-                    logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
-                agent["proto"] = getAgentProto(agent["id"])
-                setProto(agent["proto"], 'wazuh-manager', SOCKET_ADDR)
-                agent["packages"] = getAgentPackages(agent["id"])
-                setPackage(agent["packages"], 'wazuh-manager', SOCKET_ADDR)
-                agent["ports"] = getAgentPorts(agent["id"])
-                setPort(agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
+                #if 'Microsoft' in agent["os"][0]["os"]["name"]: 
+                #    agent["hotfix"] = getAgentHotfixes(agent["id"])
+                #    setHotfix(agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
+                #else:
+                #    logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
+                #agent["proto"] = getAgentProto(agent["id"])
+                #setProto(agent["proto"], 'wazuh-manager', SOCKET_ADDR)
+                #agent["packages"] = getAgentPackages(agent["id"])
+                #setPackage(agent["packages"], 'wazuh-manager', SOCKET_ADDR)
+                #agent["ports"] = getAgentPorts(agent["id"])
+                #setPort(agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
