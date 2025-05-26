@@ -157,7 +157,7 @@ def getAgentNetifaces(agent_id, limit=1000):
         logger.error("There were errors getting the agent network interfaces information")
         exit(6)
     else:
-        logger.debug(r)
+        #logger.debug(r)
         for netiface in  r['data']['affected_items']:
             netiface_list.append(netiface)
         if netiface_total == 0 and int(r['data']['total_affected_items']) > api_limit:
@@ -176,8 +176,8 @@ def getAgentNetifaces(agent_id, limit=1000):
                     logger.error("Get Network Interface Information - There were errors getting the agent hardware")
                     exit(4)
                 else:
-                    for process in r['data']['affected_items']:
-                        netiface_list.append(process)
+                    for netiface in r['data']['affected_items']:
+                        netiface_list.append(netiface)
             
         elif int(r['data']['total_affected_items']) < api_limit:
             logger.info("Get Network Interface Information - Obtained %d events", int(r['data']['total_affected_items']) )
@@ -185,7 +185,12 @@ def getAgentNetifaces(agent_id, limit=1000):
     logger.info("Get Network Interface Information - Returining %d events", len(netiface_list) )
     return netiface_list        
 
-def getAgentNetaddr(agent_id):
+def getAgentNetaddr(agent_id, limit=1000):
+    # Variables
+    netaddr_list = []
+    api_limit = limit
+    netaddr_total = 0
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/netaddr?wait_for_complete=true" 
@@ -196,8 +201,34 @@ def getAgentNetaddr(agent_id):
         logger.error("There were errors getting the agent network address information")
         exit(6)
     else:
-        logger.debug(r)
-        return r['data']['affected_items']
+        #logger.debug(r)
+        for netaddr in r['data']['affected_items']:
+            netaddr_list.append(netaddr)
+        
+        if netaddr_total == 0 and int(r['data']['total_affected_items']) > api_limit:
+            netaddr_total = int(r['data']['total_affected_items'])
+            logger.info("Get Network Address Information - Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), api_limit )
+            
+            # Iterate to obtain all events
+            while len(netaddr_list) < netaddr_total:        
+                # API processing
+                msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+                msg_url = manager_url + "/syscollector/" + agent_id + "/netaddr?wait_for_complete=true&limit=" + str(api_limit) + "&offset=" + str(len(process_list))
+                agent_netaddr_request = requests.get(msg_url, headers=msg_headers, verify=False)
+                r = json.loads(agent_netaddr_request.content.decode('utf-8'))
+                # Check
+                if agent_netaddr_request.status_code != 200:
+                    logger.error("Get Network Address Information - There were errors getting the agent hardware")
+                    exit(4)
+                else:
+                    for netaddr in r['data']['affected_items']:
+                        netaddr_list.append(netaddr)
+            
+        elif int(r['data']['total_affected_items']) < api_limit:
+            logger.info("Get Network Address Information - Obtained %d events", int(r['data']['total_affected_items']) )
+    # Returning all data
+    logger.info("Get Network Address Information - Returining %d events", len(netaddr_list) )
+    return netaddr_list
 
 def getAgentHotfixes(agent_id):
     # API processing
@@ -453,8 +484,7 @@ if __name__ == "__main__":
                 setProcess(agent_data, getAgentProcesses(agent["id"], limit=1000),'wazuh-manager', SOCKET_ADDR)
                 setOS(agent_data, getAgentOS(agent["id"]), 'wazuh-manager', SOCKET_ADDR)
                 setNetIface(agent_data, getAgentNetifaces(agent["id"], limit=1000), 'wazuh-manager', SOCKET_ADDR)
-                #agent["netaddr"] = getAgentNetaddr(agent["id"])
-                #setNetAddr(agent_data, agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
+                setNetAddr(agent_data, getAgentNetaddr(agent["id"], limit=1000), 'wazuh-manager', SOCKET_ADDR)
                 # TO-DO, validate with os content present
                 #if 'Microsoft' in agent["os"][0]["os"]["name"]: 
                 #    agent["hotfix"] = getAgentHotfixes(agent["id"])
