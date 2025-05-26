@@ -136,7 +136,7 @@ def getAgentOS(agent_id):
         logger.error("There were errors getting the agent os information")
         exit(6)
     else:
-        logger.debug(r)
+        #logger.debug(r)
         for os in r['data']['affected_items']:
             os_list.append(os)
     return os_list
@@ -246,7 +246,7 @@ def getAgentHotfixes(agent_id, limit=1000):
         logger.error("There were errors getting the agent hotfixes information")
         exit(6)
     else:
-        logger.debug(r)
+        #logger.debug(r)
         for hotfix in r['data']['affected_items']:
             hotfixes_list.append(hotfix)
             
@@ -266,8 +266,8 @@ def getAgentHotfixes(agent_id, limit=1000):
                     logger.error("Get Network Address Information - There were errors getting the agent hardware")
                     exit(4)
                 else:
-                    for netaddr in r['data']['affected_items']:
-                        hotfixes_list.append(netaddr)
+                    for hotfix in r['data']['affected_items']:
+                        hotfixes_list.append(hotfix)
             
         elif int(r['data']['total_affected_items']) < api_limit:
             logger.info("Get Hotfixes Information - Obtained %d events", int(r['data']['total_affected_items']) )
@@ -275,10 +275,15 @@ def getAgentHotfixes(agent_id, limit=1000):
     logger.info("Get Hotfixes Information - Returining %d events", len(hotfixes_list) )
     return hotfixes_list
 
-def getAgentProto(agent_id):
+def getAgentProto(agent_id, limit=1000):
+    # Variables
+    netproto_list = []
+    api_limit = limit
+    netproto_total = 0
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscollector/" + agent_id + "/netproto?wait_for_complete=true" 
+    msg_url = manager_url + "/syscollector/" + agent_id + "/netproto?wait_for_complete=true&limit=" + str(api_limit) 
     agent_netproto_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_netproto_request.content.decode('utf-8'))
     # Check
@@ -286,10 +291,41 @@ def getAgentProto(agent_id):
         logger.error("There were errors getting the agent network protocol information")
         exit(6)
     else:
-        logger.debug(r)
-        return r['data']['affected_items']
+        #logger.debug(r)
+        for netproto in r['data']['affected_items']:
+            netproto_list.append(netproto)
+        if netproto_total == 0 and int(r['data']['total_affected_items']) > api_limit:
+            netproto_total = int(r['data']['total_affected_items'])
+            logger.info("Get Network Protocol Information - Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), api_limit )
+            
+            # Iterate to obtain all events
+            while len(netproto_list) < netproto_total:        
+                # API processing
+                msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+                msg_url = manager_url + "/syscollector/" + agent_id + "/netproto?wait_for_complete=true&limit=" + str(api_limit) + "&offset=" + str(len(netproto_list))
+                agent_netproto_request = requests.get(msg_url, headers=msg_headers, verify=False)
+                r = json.loads(agent_netproto_request.content.decode('utf-8'))
+                # Check
+                if agent_netproto_request.status_code != 200:
+                    logger.error("Get Network Address Information - There were errors getting the agent hardware")
+                    exit(4)
+                else:
+                    for netproto in r['data']['affected_items']:
+                        netproto_list.append(netproto)
+            
+        elif int(r['data']['total_affected_items']) < api_limit:
+            logger.info("Get Network Address Information - Obtained %d events", int(r['data']['total_affected_items']) )
+    # Returning all data
+    logger.info("Get Network Address Information - Returining %d events", len(netproto_list) )
+    return netproto_list
+        
 
-def getAgentPackages(agent_id):
+def getAgentPackages(agent_id, limit=1000):
+    # Variables
+    packages_list = []
+    api_limit = limit
+    packages_total = 0
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/packages?wait_for_complete=true" 
@@ -300,10 +336,40 @@ def getAgentPackages(agent_id):
         logger.error("There were errors getting the agent packages information")
         exit(6)
     else:
-        logger.debug(r)
-        return r['data']['affected_items']
+        #logger.debug(r)
+        for package in r['data']['affected_items']:
+            packages_list.append(package)
+        
+        if packages_total == 0 and int(r['data']['total_affected_items']) > api_limit:
+            packages_total = int(r['data']['total_affected_items'])
+            logger.info("Get Packages Information - Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), api_limit )
+            
+            # Iterate to obtain all events
+            while len(packages_list) < packages_total:        
+                # API processing
+                msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+                msg_url = manager_url + "/syscollector/" + agent_id + "/packages?wait_for_complete=true&limit=" + str(api_limit) + "&offset=" + str(len(packages_list))
+                agent_packages_request = requests.get(msg_url, headers=msg_headers, verify=False)
+                r = json.loads(agent_packages_request.content.decode('utf-8'))
+                # Check
+                if agent_packages_request.status_code != 200:
+                    logger.error("Get Packages Information - There were errors getting the agent hardware")
+                    exit(4)
+                else:
+                    for package in r['data']['affected_items']:
+                        packages_list.append(package) 
+        elif int(r['data']['total_affected_items']) < api_limit:
+            logger.info("Get Packages Information - Obtained %d events", int(r['data']['total_affected_items']) )
+    # Returning all data
+    logger.info("Get Packages Information - Returining %d events", len(packages_list) )
+    return packages_list
 
-def getAgentPorts(agent_id):
+def getAgentPorts(agent_id, limit=1000):
+    # Variables
+    netport_list = []
+    api_limit = limit
+    netport_total = 0
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/ports?wait_for_complete=true" 
@@ -314,8 +380,45 @@ def getAgentPorts(agent_id):
         logger.error("There were errors getting the agent network ports information")
         exit(6)
     else:
-        logger.debug(r)
-        return r['data']['affected_items']
+        #logger.debug(r)
+        for netport in r['data']['affected_items']:
+            netport_list.append(netport)
+        
+        if netport_total == 0 and int(r['data']['total_affected_items']) > api_limit:
+            netport_total = int(r['data']['total_affected_items'])
+            logger.info("Get Ports Information - Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), api_limit )
+            
+            # Iterate to obtain all events
+            while len(netport_list) < netport_total:        
+                # API processing
+                msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+                msg_url = manager_url + "/syscollector/" + agent_id + "/ports?wait_for_complete=true&limit=" + str(api_limit) + "&offset=" + str(len(netport_list))
+                agent_ports_request = requests.get(msg_url, headers=msg_headers, verify=False)
+                r = json.loads(agent_ports_request.content.decode('utf-8'))
+                # Check
+                if agent_ports_request.status_code != 200:
+                    logger.error("Get Ports Information - There were errors getting the agent hardware")
+                    exit(4)
+                else:
+                    for netport in r['data']['affected_items']:
+                        netport_list.append(netport) 
+        elif int(r['data']['total_affected_items']) < api_limit:
+            logger.info("Get Ports Information - Obtained %d events", int(r['data']['total_affected_items']) )
+    # Returning all data
+    logger.info("Get Ports Information - Returining %d events", len(netport_list) )
+    return netport_list
+
+def socketSend (message):
+    string = str(message)
+    try:
+        sock = socket(AF_UNIX, SOCK_DGRAM)
+        sock.connect(SOCKET_ADDR)
+        sock.send(string.encode())
+        sock.close()
+        logger.debug(string)
+    except FileNotFoundError:
+        logger.debug('# Error: Unable to open socket connection at %s, unable to send message:\n %s' % SOCKET_ADDR, message)
+        exit(4)
 
 # Post Actions
 def setHardware(agent_data, hardware_data, location , SOCKET_ADDR):
@@ -325,15 +428,7 @@ def setHardware(agent_data, hardware_data, location , SOCKET_ADDR):
     for hardware in hardware_data:
         hardware["endpoint"] = "hardware"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hardware))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
 
 def setProcess(agent_data, process_data, location , SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -342,15 +437,7 @@ def setProcess(agent_data, process_data, location , SOCKET_ADDR):
     for process in process_data:
         process["endpoint"] = "processes"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(process))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
 
 def setOS(agent_data, os_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -359,15 +446,7 @@ def setOS(agent_data, os_data, location, SOCKET_ADDR):
     for os in os_data:
         os["endpoint"] = "os"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(os))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
 
 def setNetIface(agent_data, netiface_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -376,15 +455,7 @@ def setNetIface(agent_data, netiface_data, location, SOCKET_ADDR):
     for netiface in netiface_data:
         netiface["endpoint"] = "network_interfaces"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(netiface))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
 
 def setNetAddr(agent_data, netaddr_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -393,15 +464,7 @@ def setNetAddr(agent_data, netaddr_data, location, SOCKET_ADDR):
     for netaddr in netaddr_data:
         netaddr["endpoint"] = "network_addresses"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(netaddr))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
 
 def setProto(agent_data, proto_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -410,15 +473,7 @@ def setProto(agent_data, proto_data, location, SOCKET_ADDR):
     for protocol in proto_data:
         protocol["endpoint"] = "network_protocols"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(protocol))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
             
 def setPackage(agent_data, package_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -427,15 +482,7 @@ def setPackage(agent_data, package_data, location, SOCKET_ADDR):
     for package in package_data:
         package["endpoint"] = "packages"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(package))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
 
 def setPort(agent_data, port_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -444,15 +491,7 @@ def setPort(agent_data, port_data, location, SOCKET_ADDR):
     for port in port_data:
         port["endpoint"] = "network_ports"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(port))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)
+        socketSend(string)
 
 def setHotfix(agent_data, hotfix_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -461,15 +500,7 @@ def setHotfix(agent_data, hotfix_data, location, SOCKET_ADDR):
     for hotfix in hotfix_data:
         hotfix["endpoint"] = "hotfixes"
         string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hotfix))
-        try:
-            sock = socket(AF_UNIX, SOCK_DGRAM)
-            sock.connect(SOCKET_ADDR)
-            sock.send(string.encode())
-            sock.close()
-            logger.debug(string)
-        except FileNotFoundError:
-            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-            exit(4)   
+        socketSend(string)   
     
 if __name__ == "__main__":
     # Initial values
@@ -522,9 +553,6 @@ if __name__ == "__main__":
                     setHotfix(agent_data, getAgentHotfixes(agent["id"], limit=1000), 'wazuh-manager', SOCKET_ADDR)
                 else:
                     logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
-                #agent["proto"] = getAgentProto(agent["id"])
-                #setProto(agent_data, agent["proto"], 'wazuh-manager', SOCKET_ADDR)
-                #agent["packages"] = getAgentPackages(agent["id"])
-                #setPackage(agent_data, agent["packages"], 'wazuh-manager', SOCKET_ADDR)
-                #agent["ports"] = getAgentPorts(agent["id"])
-                #setPort(agent_data, agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
+                setProto(agent_data, getAgentProto(agent["id"]), 'wazuh-manager', SOCKET_ADDR)
+                setPackage(agent_data, getAgentPackages(agent["id"]), 'wazuh-manager', SOCKET_ADDR)
+                setPort(agent_data, getAgentPorts(agent["id"]) , 'wazuh-manager', SOCKET_ADDR)
