@@ -230,10 +230,15 @@ def getAgentNetaddr(agent_id, limit=1000):
     logger.info("Get Network Address Information - Returining %d events", len(netaddr_list) )
     return netaddr_list
 
-def getAgentHotfixes(agent_id):
+def getAgentHotfixes(agent_id, limit=1000):
+    # Variables
+    hotfixes_list = []
+    api_limit = limit
+    hotfixes_total = 0
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscollector/" + agent_id + "/hotfixes?wait_for_complete=true" 
+    msg_url = manager_url + "/syscollector/" + agent_id + "/hotfixes?wait_for_complete=true&limit=" + str(api_limit) 
     agent_hotfix_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_hotfix_request.content.decode('utf-8'))
     # Check
@@ -242,7 +247,33 @@ def getAgentHotfixes(agent_id):
         exit(6)
     else:
         logger.debug(r)
-        return r['data']['affected_items']
+        for hotfix in r['data']['affected_items']:
+            hotfixes_list.append(hotfix)
+            
+        if hotfixes_total == 0 and int(r['data']['total_affected_items']) > api_limit:
+            hotfixes_total = int(r['data']['total_affected_items'])
+            logger.info("Get Hotfixes Information - Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), api_limit )
+            
+            # Iterate to obtain all events
+            while len(hotfixes_list) < hotfixes_total:        
+                # API processing
+                msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+                msg_url = manager_url + "/syscollector/" + agent_id + "/hotfixes?wait_for_complete=true&limit=" + str(api_limit) + "&offset=" + str(len(hotfixes_list))
+                agent_hotfix_request = requests.get(msg_url, headers=msg_headers, verify=False)
+                r = json.loads(agent_hotfix_request.content.decode('utf-8'))
+                # Check
+                if agent_hotfix_request.status_code != 200:
+                    logger.error("Get Network Address Information - There were errors getting the agent hardware")
+                    exit(4)
+                else:
+                    for netaddr in r['data']['affected_items']:
+                        hotfixes_list.append(netaddr)
+            
+        elif int(r['data']['total_affected_items']) < api_limit:
+            logger.info("Get Hotfixes Information - Obtained %d events", int(r['data']['total_affected_items']) )
+    # Returning all data
+    logger.info("Get Hotfixes Information - Returining %d events", len(hotfixes_list) )
+    return hotfixes_list
 
 def getAgentProto(agent_id):
     # API processing
@@ -486,11 +517,11 @@ if __name__ == "__main__":
                 setNetIface(agent_data, getAgentNetifaces(agent["id"], limit=1000), 'wazuh-manager', SOCKET_ADDR)
                 setNetAddr(agent_data, getAgentNetaddr(agent["id"], limit=1000), 'wazuh-manager', SOCKET_ADDR)
                 # TO-DO, validate with os content present
-                #if 'Microsoft' in agent["os"][0]["os"]["name"]: 
-                #    agent["hotfix"] = getAgentHotfixes(agent["id"])
-                #    setHotfix(agent_data, agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
-                #else:
-                #    logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
+                os_data = getAgentOS(agent["id"])
+                if 'Microsoft' in os_data[0]["os"]["name"]: 
+                    setHotfix(agent_data, getAgentHotfixes(agent["id"], limit=1000), 'wazuh-manager', SOCKET_ADDR)
+                else:
+                    logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
                 #agent["proto"] = getAgentProto(agent["id"])
                 #setProto(agent_data, agent["proto"], 'wazuh-manager', SOCKET_ADDR)
                 #agent["packages"] = getAgentPackages(agent["id"])
