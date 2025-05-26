@@ -57,21 +57,51 @@ def getAgentList():
         for agent in r['data']['affected_items']: 
             agent_list.append(agent)
 
-def getAgentHardware(agent_id):
+def getAgentHardware(agent_id, limit=1000):
+    # Variables
+    hardware_list = []
+    api_limit = str(limit)
+    hardware_total = 0
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscollector/" + agent_id + "/hardware?wait_for_complete=true" 
+    msg_url = manager_url + "/syscollector/" + agent_id + "/hardware?wait_for_complete=true&limit=" + api_limit 
     agent_hardware_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_hardware_request.content.decode('utf-8'))
     # Check
     if agent_hardware_request.status_code != 200:
-        logger.error("There were errors getting the agent hardware")
+        logger.error("Get Hardware Information - There were errors getting the agent hardware")
         exit(4)
     else:
-        logger.debug(r)
-        return r['data']['affected_items']
         
-
+        # logger.debug(r)
+        for hardware in r['data']['affected_items']:
+            hardware_list.append(hardware)
+        
+        if hardware_total == 0 and int(r['data']['total_affected_items']) > api_limit:
+            hardware_total = int(r['data']['total_affected_items'])
+            logger.info("Get Hardware Information - Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), api_limit )
+        elif int(r['data']['total_affected_items']) < api_limit:
+            logger.info("Get Hardware Information - Obtaining %d events", int(r['data']['total_affected_items']) )
+    
+    # Iterate to obtain all events
+    while len(hardware_list) < hardware_total:        
+        # API processing
+        msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+        msg_url = manager_url + "/syscollector/" + agent_id + "/hardware?wait_for_complete=true&limit=" + api_limit + "&offset=" + str(len(hardware_list))
+        agent_hardware_request = requests.get(msg_url, headers=msg_headers, verify=False)
+        r = json.loads(agent_hardware_request.content.decode('utf-8'))
+        # Check
+        if agent_hardware_request.status_code != 200:
+            logger.error("Get Hardware Information - There were errors getting the agent hardware")
+            exit(4)
+        else:
+            for hardware in r['data']['affected_items']:
+                hardware_list.append(hardware)
+    # Returning all collected data
+    logger.info("Get Hardware Information - Returining %d events", len(hardware_list) )
+    return hardware_list        
+      
 def getAgentProcesses(agent_id):
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
