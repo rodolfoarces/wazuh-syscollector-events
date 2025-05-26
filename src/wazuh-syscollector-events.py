@@ -328,7 +328,7 @@ def getAgentPackages(agent_id, limit=1000):
     
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscollector/" + agent_id + "/packages?wait_for_complete=true" 
+    msg_url = manager_url + "/syscollector/" + agent_id + "/packages?wait_for_complete=true&limit=" + str(api_limit) 
     agent_package_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_package_request.content.decode('utf-8'))
     # Check
@@ -372,7 +372,7 @@ def getAgentPorts(agent_id, limit=1000):
     
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscollector/" + agent_id + "/ports?wait_for_complete=true" 
+    msg_url = manager_url + "/syscollector/" + agent_id + "/ports?wait_for_complete=true&limit=" + str(api_limit) 
     agent_ports_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_ports_request.content.decode('utf-8'))
     # Check
