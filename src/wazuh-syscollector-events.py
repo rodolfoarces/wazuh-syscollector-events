@@ -123,6 +123,9 @@ def getAgentProcesses(agent_id, limit=1000):
     return process_list        
         
 def getAgentOS(agent_id):
+    # Variables
+    os_list = []
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
     msg_url = manager_url + "/syscollector/" + agent_id + "/os?wait_for_complete=true" 
@@ -134,12 +137,19 @@ def getAgentOS(agent_id):
         exit(6)
     else:
         logger.debug(r)
-        return r['data']['affected_items']
+        for os in r['data']['affected_items']:
+            os_list.append(os)
+    return os_list
 
-def getAgentNetifaces(agent_id):
+def getAgentNetifaces(agent_id, limit=1000):
+    # Variables
+    netiface_list = []
+    api_limit = limit
+    netiface_total = 0
+    
     # API processing
     msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
-    msg_url = manager_url + "/syscollector/" + agent_id + "/netiface?wait_for_complete=true" 
+    msg_url = manager_url + "/syscollector/" + agent_id + "/netiface?wait_for_complete=true&limit=" + str(api_limit) 
     agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
     r = json.loads(agent_iface_request.content.decode('utf-8'))
     # Check
@@ -148,7 +158,32 @@ def getAgentNetifaces(agent_id):
         exit(6)
     else:
         logger.debug(r)
-        return r['data']['affected_items']
+        for netiface in  r['data']['affected_items']:
+            netiface_list.append(netiface)
+        if netiface_total == 0 and int(r['data']['total_affected_items']) > api_limit:
+            netiface_total = int(r['data']['total_affected_items'])
+            logger.info("Get Network Interface Information - Obtaining %d events, in batches of %d events", int(r['data']['total_affected_items']), api_limit )
+            
+            # Iterate to obtain all events
+            while len(netiface_list) < netiface_total:        
+                # API processing
+                msg_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+                msg_url = manager_url + "/syscollector/" + agent_id + "/netiface?wait_for_complete=true&limit=" + str(api_limit) + "&offset=" + str(len(process_list))
+                agent_iface_request = requests.get(msg_url, headers=msg_headers, verify=False)
+                r = json.loads(agent_iface_request.content.decode('utf-8'))
+                # Check
+                if agent_iface_request.status_code != 200:
+                    logger.error("Get Network Interface Information - There were errors getting the agent hardware")
+                    exit(4)
+                else:
+                    for process in r['data']['affected_items']:
+                        netiface_list.append(process)
+            
+        elif int(r['data']['total_affected_items']) < api_limit:
+            logger.info("Get Network Interface Information - Obtained %d events", int(r['data']['total_affected_items']) )
+    # Returning all data
+    logger.info("Get Network Interface Information - Returining %d events", len(netiface_list) )
+    return netiface_list        
 
 def getAgentNetaddr(agent_id):
     # API processing
@@ -222,20 +257,21 @@ def getAgentPorts(agent_id):
 
 # Post Actions
 def setHardware(agent_data, hardware_data, location , SOCKET_ADDR):
-    hardware_data["endpoint"] = "hardware"
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
     location = location.replace('|', '||').replace(':', '|:')
-
-    string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hardware_data))
-    try:
-        sock = socket(AF_UNIX, SOCK_DGRAM)
-        sock.connect(SOCKET_ADDR)
-        sock.send(string.encode())
-        sock.close()
-        logger.debug(string)
-    except FileNotFoundError:
-        logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-        exit(4)
+    
+    for hardware in hardware_data:
+        hardware["endpoint"] = "hardware"
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(hardware))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
 
 def setProcess(agent_data, process_data, location , SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -255,20 +291,21 @@ def setProcess(agent_data, process_data, location , SOCKET_ADDR):
             exit(4)
 
 def setOS(agent_data, os_data, location, SOCKET_ADDR):
-    os_data["endpoint"] = "os"
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
     location = location.replace('|', '||').replace(':', '|:')
     
-    string = '1:{0}->syscollector:{1}'.format(location, json.dumps(os_data))
-    try:
-        sock = socket(AF_UNIX, SOCK_DGRAM)
-        sock.connect(SOCKET_ADDR)
-        sock.send(string.encode())
-        sock.close()
-        logger.debug(string)
-    except FileNotFoundError:
-        logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
-        exit(4)
+    for os in os_data:
+        os["endpoint"] = "os"
+        string = '1:{0}->syscollector:{1}'.format(location, json.dumps(os))
+        try:
+            sock = socket(AF_UNIX, SOCK_DGRAM)
+            sock.connect(SOCKET_ADDR)
+            sock.send(string.encode())
+            sock.close()
+            logger.debug(string)
+        except FileNotFoundError:
+            logger.debug('# Error: Unable to open socket connection at %s' % SOCKET_ADDR)
+            exit(4)
 
 def setNetIface(agent_data, netiface_data, location, SOCKET_ADDR):
     location = '[{0}] ({1}) {2}'.format(agent_data['id'], agent_data['name'], agent_data['ip'] if 'ip' in agent_data else 'any')
@@ -412,25 +449,21 @@ if __name__ == "__main__":
         for agent in agent_list:
             if agent["id"] != '000':
                 agent_data = { "id": agent["id"], "name": agent["name"], "ip": agent["ip"] }
-                agent["hardware"] = getAgentHardware(agent["id"])
-                setHardware(agent_data, agent["hardware"][0], 'wazuh-manager', SOCKET_ADDR)
-                agent["processes"] = getAgentProcesses(agent["id"])
-                setProcess(agent_data, agent["processes"],'wazuh-manager', SOCKET_ADDR)
-                agent["os"] = getAgentOS(agent["id"])
-                setOS(agent_data, agent["os"][0], 'wazuh-manager', SOCKET_ADDR)
-                agent["netiface"] = getAgentNetifaces(agent["id"])
-                setNetIface(agent_data, agent["netiface"], 'wazuh-manager', SOCKET_ADDR)
-                agent["netaddr"] = getAgentNetaddr(agent["id"])
-                setNetAddr(agent_data, agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
+                setHardware(agent_data, getAgentHardware(agent["id"]), 'wazuh-manager', SOCKET_ADDR)
+                setProcess(agent_data, getAgentProcesses(agent["id"], limit=1000),'wazuh-manager', SOCKET_ADDR)
+                setOS(agent_data, getAgentOS(agent["id"]), 'wazuh-manager', SOCKET_ADDR)
+                setNetIface(agent_data, getAgentNetifaces(agent["id"], limit=1000), 'wazuh-manager', SOCKET_ADDR)
+                #agent["netaddr"] = getAgentNetaddr(agent["id"])
+                #setNetAddr(agent_data, agent["netaddr"], 'wazuh-manager', SOCKET_ADDR)
                 # TO-DO, validate with os content present
-                if 'Microsoft' in agent["os"][0]["os"]["name"]: 
-                    agent["hotfix"] = getAgentHotfixes(agent["id"])
-                    setHotfix(agent_data, agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
-                else:
-                    logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
-                agent["proto"] = getAgentProto(agent["id"])
-                setProto(agent_data, agent["proto"], 'wazuh-manager', SOCKET_ADDR)
-                agent["packages"] = getAgentPackages(agent["id"])
-                setPackage(agent_data, agent["packages"], 'wazuh-manager', SOCKET_ADDR)
-                agent["ports"] = getAgentPorts(agent["id"])
-                setPort(agent_data, agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
+                #if 'Microsoft' in agent["os"][0]["os"]["name"]: 
+                #    agent["hotfix"] = getAgentHotfixes(agent["id"])
+                #    setHotfix(agent_data, agent["hotfix"], 'wazuh-manager', SOCKET_ADDR)
+                #else:
+                #    logger.debug("Excluding hotfixes, it's not a Microsoft Windows endpoint")
+                #agent["proto"] = getAgentProto(agent["id"])
+                #setProto(agent_data, agent["proto"], 'wazuh-manager', SOCKET_ADDR)
+                #agent["packages"] = getAgentPackages(agent["id"])
+                #setPackage(agent_data, agent["packages"], 'wazuh-manager', SOCKET_ADDR)
+                #agent["ports"] = getAgentPorts(agent["id"])
+                #setPort(agent_data, agent["ports"] , 'wazuh-manager', SOCKET_ADDR)
